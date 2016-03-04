@@ -48,7 +48,7 @@ static size_t grid_last_used;
 static void get_input();
 static int check_and_play(int play);
 static int computer_play_count(int x, int y, int *num_x, int *num_o, NEXT_MOVE *nm, NEXT_MOVE *tmp_nm);
-static void print_grid();
+static void print_grid(int move_no);
 static void get_grid_size(GRID_SIZE *gs);
 static void move_copy_higher_priority(NEXT_MOVE *dest, NEXT_MOVE *src);
 static void move_copy(NEXT_MOVE *dest, NEXT_MOVE *src);
@@ -59,14 +59,15 @@ static void deallocate_grid();
 
 
 int main(int argc, char **argv) {
-        int result;
+        int result, move_no;
         
         allocate_grid();
         grid_last_used = 0;
+        move_no = 0;
         grid[grid_last_used].x = 0;
         grid[grid_last_used].y = 0;
         grid[grid_last_used].s = CIRCLE;
-        print_grid();
+        print_grid(++move_no);
         result = 0;
         
         do {
@@ -74,12 +75,12 @@ int main(int argc, char **argv) {
                         allocate_grid();
                          
                 get_input();
-                print_grid();
+                print_grid(++move_no);
                 result = check_and_play(0);
                 
                 if (result == 0) {
                         result = check_and_play(1);
-                        print_grid();
+                        print_grid(++move_no);
                 }
                 
                 if (result == 0) {
@@ -249,12 +250,20 @@ int computer_play_count(int x, int y, int *num_x, int *num_o, NEXT_MOVE *nm, NEX
                 *num_x = 0;
                 *num_o = 0;
                                 
-                if (tmp_nm->first != EMPTY) {
+                if (tmp_nm->last != EMPTY) {
                         tmp_nm->priority++;                 
-                } else {
+                } else 
+                if (tmp_nm->first == EMPTY) {
                         tmp_nm->priority = 1;
                 }
-                if ((tmp_nm->first == EMPTY) || (tmp_nm->last != EMPTY)) {
+                
+                if (tmp_nm->stone_cnt >= 3) {
+                        tmp_nm->priority += 2;
+                }
+                
+                if ((tmp_nm->first == EMPTY) || 
+                        ((tmp_nm->last != EMPTY) && !((tmp_nm->move_x == 0) && (tmp_nm->move_x == 0)) && (tmp_nm->stone_cnt < 5))
+                        ) {
                                 tmp_nm->move_x = x;
                                 tmp_nm->move_y = y;
                 }
@@ -328,12 +337,13 @@ void move_empty(NEXT_MOVE *m) {
         m->move_y = 0;        
 }
 
-void print_grid() {
+void print_grid(int move_no) {
         size_t x, y;
         STONE stone;
         GRID_SIZE gs;
         
         get_grid_size(&gs);
+        printf("\n  Move No. #%d\n", move_no);
         printf("  ");
         for (x = 0; x <= (gs.maxx - gs.minx); x++) {
                 putchar('A' + x);
