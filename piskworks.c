@@ -1,6 +1,7 @@
 /*
 *       Piskworks
 *       Jaroslav Beran
+*       jaroslav.beran@gmail.com
 *       24.2.2016
 */
 
@@ -94,6 +95,8 @@ int main(int argc, char **argv) {
                 printf("You are winner\n");
         }        
         
+        printf("Press a key...\n");
+        getchar();        
         deallocate_grid();
         return 0;
 }
@@ -110,7 +113,7 @@ void get_input() {
 
         do {
                 is_input_correct = 0;                
-                printf("Put your move. (for ex. B-9)\n");
+                printf("Put your move. (for ex. B-3)\n");
                 fgets(line, LINELEN - 1, stdin);
                
                 pc = strchr(line, '-');
@@ -181,13 +184,11 @@ int check_and_play(int play) {
                 move_copy_higher_priority(&nm, &tmp_nm); 
         }
         /* Askew left-right */
-        //printf("(%d,%d),(%d,%d)\n", gs.minx, gs.maxx, gs.miny, gs.maxy);
         for (x = (gs.maxx - gs.minx); x >= 0 ; x--) {
                 num_x = 0;
                 num_o = 0;
                 move_empty(&tmp_nm);
                 for (xx = x, yy = 0; (xx <= (gs.maxx - gs.minx)) && (yy <= (gs.maxy - gs.miny)); xx++, yy++) {
-                        //printf("%d, %d\n", x + gs.minx, y + gs.miny);
                         result = computer_play_count(xx + gs.minx, yy + gs.miny, &num_x, &num_o, &nm, &tmp_nm);
                         if (result != 0)
                                 return result;
@@ -377,9 +378,6 @@ void get_grid_size(GRID_SIZE *gs) {
                         gs->maxx = grid[i].x;
                 if (gs->maxy < grid[i].y)
                         gs->maxy = grid[i].y;
-                /*
-                printf("%d, %d, %c\n", grid[i].x, grid[i].y, (grid[i].s == CIRCLE) ? 'o' : 'x');
-                */
         }
         
         gs->minx -= GRID_OFFSET;
