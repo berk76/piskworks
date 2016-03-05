@@ -259,10 +259,12 @@ int computer_play_count(int x, int y, int *num_x, int *num_o, NEXT_MOVE *nm, NEX
                 
                 if (tmp_nm->stone_cnt >= 3) {
                         tmp_nm->priority += 2;
+                        if (tmp_nm->first == CROSS)
+                                tmp_nm->priority += 100;
                 }
                 
                 if ((tmp_nm->first == EMPTY) || 
-                        ((tmp_nm->last != EMPTY) && !((tmp_nm->move_x == 0) && (tmp_nm->move_x == 0)) && (tmp_nm->stone_cnt < 5))
+                        ((tmp_nm->last != EMPTY) && (tmp_nm->stone_cnt < 5))
                         ) {
                                 tmp_nm->move_x = x;
                                 tmp_nm->move_y = y;
@@ -286,11 +288,8 @@ int computer_play_count(int x, int y, int *num_x, int *num_o, NEXT_MOVE *nm, NEX
                 *num_o = 0;
                 *num_x += 1;
                 
-                if (tmp_nm->first == CIRCLE) {
+                if (tmp_nm->first == CIRCLE)
                         move_copy_higher_priority(nm, tmp_nm);
-                        /* defensive priority */
-                        tmp_nm->priority ++;
-                }
                 tmp_nm->first = CROSS;
                 tmp_nm->priority += 2;
                 tmp_nm->stone_cnt++;
