@@ -5,12 +5,16 @@
 *       24.2.2016
 */
 
-#include <assert.h>
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+/* For Z88DK compiler */
+#if defined(SCCZ80)
+#include <malloc.h>
+extern long heap(60000);
+#endif
 
 #define GRID_OFFSET 2
 
@@ -42,7 +46,7 @@ typedef struct {
 static FIELD *grid;
 static size_t grid_size;
 static size_t grid_last_used;
-#define GRID_ALLOC_BLOCK 1024;
+#define GRID_ALLOC_BLOCK 100;
 
 
 static void get_input();
@@ -60,6 +64,15 @@ static void deallocate_grid();
 
 int main(int argc, char **argv) {
         int result, move_no;
+        
+        /* For Z88DK compiler */
+        #if defined(SCCZ80)
+        mallinit();              /* heap cleared to empty */
+        sbrk(30000,2000);        /* add 2000 bytes from addresses 30000-31999 inclusive to the heap */
+        sbrk(65000,536);         /* add 536 bytes from addresses 65000-65535 inclusive to the heap  */
+        printf("%c",12);         /* cls */
+        printf("%c%c", 1, 32);   /* 32 characters */
+        #endif
         
         allocate_grid();
         grid_last_used = 0;
@@ -350,7 +363,13 @@ void print_grid(int move_no) {
         putchar('\n');
         
         for (y = 0; y <= (gs.maxy - gs.miny); y++) {
+                /* For Z88DK compiler */
+                #if defined(SCCZ80)
+                printf("%d", (y + 1) / 10);
+                printf("%d", (y + 1) % 10);
+                #else
                 printf("%2d", y + 1);
+                #endif
                 for (x = 0; x <= (gs.maxx - gs.minx); x++) {
                         stone = get_stone(x + gs.minx, y + gs.miny);
                         if (stone == EMPTY) {
@@ -409,12 +428,15 @@ STONE get_stone(int x, int y) {
 void allocate_grid() {
         if (grid_size == 0) {
                 grid_size = GRID_ALLOC_BLOCK;
-                grid = (FIELD *) malloc (sizeof(FIELD) * grid_size);
-                assert(grid != NULL);  
+                grid = (FIELD *) malloc (sizeof(FIELD) * grid_size);  
         } else {
                 grid_size += GRID_ALLOC_BLOCK;
                 grid = (FIELD *) realloc (grid, sizeof(FIELD) * grid_size);
-                assert(grid != NULL);
+        }
+        
+        if (grid == NULL) {
+                printf("Out of memory\n");
+                exit(1);
         }
 }
 
