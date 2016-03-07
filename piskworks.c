@@ -1,7 +1,7 @@
 /*
-*       Piskworks
+*       piskworks.c
 *       Jaroslav Beran
-*       jaroslav.beran@gmail.com
+*       https://bitbucket.org/berk76/piskworks
 *       24.2.2016
 */
 
@@ -11,12 +11,16 @@
 #include <string.h>
 
 /* For Z88DK compiler */
-#if defined(SCCZ80)
+#ifdef SCCZ80
 #include <malloc.h>
 extern long heap(60000);
 #endif
 
+#define VERSION "0.1.1"
+#define WEB "bitbucket.org/berk76/piskworks"
 #define GRID_OFFSET 2
+#define GRID_ALLOC_BLOCK 100;
+ 
 
 typedef enum {EMPTY, CROSS, CIRCLE} STONE; 
 
@@ -41,12 +45,13 @@ typedef struct {
         int stone_cnt;
         int move_x;
         int move_y;
+        int move_is_first;
 } NEXT_MOVE;
+
 
 static FIELD *grid;
 static size_t grid_size;
 static size_t grid_last_used;
-#define GRID_ALLOC_BLOCK 100;
 
 
 static void get_input();
@@ -66,13 +71,16 @@ int main(int argc, char **argv) {
         int result, move_no;
         
         /* For Z88DK compiler */
-        #if defined(SCCZ80)
+        #ifdef SCCZ80
         mallinit();              /* heap cleared to empty */
         sbrk(30000,2000);        /* add 2000 bytes from addresses 30000-31999 inclusive to the heap */
         sbrk(65000,536);         /* add 536 bytes from addresses 65000-65535 inclusive to the heap  */
         printf("%c",12);         /* cls */
         printf("%c%c", 1, 32);   /* 32 characters */
         #endif
+        
+        printf("Piskworks %s\n", VERSION);
+        printf("%s\n\n", WEB);
         
         allocate_grid();
         grid_last_used = 0;
@@ -262,29 +270,28 @@ int computer_play_count(int x, int y, int *num_x, int *num_o, NEXT_MOVE *nm, NEX
         if (stone == EMPTY) {
                 *num_x = 0;
                 *num_o = 0;
-                                
-                if (tmp_nm->last != EMPTY) {
-                        tmp_nm->priority++;                 
-                } else 
-                if (tmp_nm->first == EMPTY) {
-                        tmp_nm->priority = 1;
+                           
+                if (tmp_nm->last == EMPTY) {
+                        move_copy_higher_priority(nm, tmp_nm);
                 }
                 
-                if (tmp_nm->stone_cnt >= 3) {
-                        tmp_nm->priority += 2;
-                        if (tmp_nm->first == CROSS)
-                                tmp_nm->priority += 100;
-                }
+                tmp_nm->priority++;
+                tmp_nm->empty_cnt++;                 
+                
+                //if (tmp_nm->stone_cnt >= 3) {
+                //        tmp_nm->priority += 2;
+                //}
                 
                 if ((tmp_nm->first == EMPTY) || 
-                        ((tmp_nm->last != EMPTY) && (tmp_nm->stone_cnt < 5))
+                        ((tmp_nm->last != EMPTY) && (tmp_nm->move_x == 0) && (tmp_nm->move_y == 0)) ||
+                        ((tmp_nm->last != EMPTY) && (tmp_nm->move_is_first == 1))
                         ) {
                                 tmp_nm->move_x = x;
                                 tmp_nm->move_y = y;
+                                tmp_nm->move_is_first = (tmp_nm->first == EMPTY);
                 }
                 
                 tmp_nm->last = EMPTY;
-                tmp_nm->empty_cnt++;
         }
         if (stone == CIRCLE) {
                 *num_x = 0;
@@ -306,6 +313,8 @@ int computer_play_count(int x, int y, int *num_x, int *num_o, NEXT_MOVE *nm, NEX
                 tmp_nm->first = CROSS;
                 tmp_nm->priority += 2;
                 tmp_nm->stone_cnt++;
+                //if (tmp_nm->stone_cnt >= 3)
+                //        tmp_nm->priority += 2;
                 tmp_nm->last = CROSS;                                
         }
 
@@ -321,7 +330,6 @@ int computer_play_count(int x, int y, int *num_x, int *num_o, NEXT_MOVE *nm, NEX
 
 void move_copy_higher_priority(NEXT_MOVE *dest, NEXT_MOVE *src) {
         if ((src->first != EMPTY) &&
-                ((src->empty_cnt + src->stone_cnt) > 4) &&
                 (src->priority > dest->priority) && 
                 !((src->move_x == 0) && (src->move_y == 0)))
                         move_copy(dest, src);
@@ -336,7 +344,8 @@ void move_copy(NEXT_MOVE *dest, NEXT_MOVE *src) {
         dest->empty_cnt = src->empty_cnt;
         dest->stone_cnt = src->stone_cnt;
         dest->move_x = src->move_x;
-        dest->move_y = src->move_y;        
+        dest->move_y = src->move_y;
+        dest->move_is_first = src->move_is_first;        
 }
 
 void move_empty(NEXT_MOVE *m) {
@@ -346,7 +355,8 @@ void move_empty(NEXT_MOVE *m) {
         m->empty_cnt = 0;
         m->stone_cnt = 0;
         m->move_x = 0;
-        m->move_y = 0;        
+        m->move_y = 0;
+        m->move_is_first = 1;        
 }
 
 void print_grid(int move_no) {
@@ -357,33 +367,40 @@ void print_grid(int move_no) {
         get_grid_size(&gs);
         printf("\n  Move No. #%d\n", move_no);
         printf("  ");
+        #ifndef SCCZ80 
+        putchar(' '); 
+        #endif
         for (x = 0; x <= (gs.maxx - gs.minx); x++) {
                 putchar('A' + x);
+                #ifndef SCCZ80 
+                putchar(' '); 
+                #endif
         }
         putchar('\n');
         
         for (y = 0; y <= (gs.maxy - gs.miny); y++) {
                 /* For Z88DK compiler */
-                #if defined(SCCZ80)
+                #ifdef SCCZ80
                 printf("%d", (y + 1) / 10);
                 printf("%d", (y + 1) % 10);
                 #else
                 printf("%2d", y + 1);
+                putchar(' ');
                 #endif
                 for (x = 0; x <= (gs.maxx - gs.minx); x++) {
                         stone = get_stone(x + gs.minx, y + gs.miny);
                         if (stone == EMPTY) {
                                 putchar('.');
-                                continue;
-                        }
+                        } else
                         if (stone == CIRCLE) {
                                 putchar('o');
-                                continue;
-                        }
+                        } else
                         if (stone == CROSS) {
                                 putchar('x');
-                                continue;
-                        }                        
+                        }
+                        #ifndef SCCZ80 
+                        putchar(' '); 
+                        #endif                        
                 }
                 putchar('\n');
         }
