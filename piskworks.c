@@ -17,7 +17,6 @@ extern long heap(60000);
 #endif
 
 #define VERSION "0.1.1"
-#define WEB "bitbucket.org/berk76/piskworks"
 #define GRID_OFFSET 2
 #define GRID_ALLOC_BLOCK 100;
  
@@ -79,8 +78,7 @@ int main(int argc, char **argv) {
         printf("%c%c", 1, 32);   /* 32 characters */
         #endif
         
-        printf("Piskworks %s\n", VERSION);
-        printf("%s\n\n", WEB);
+        printf("Piskworks %s\n\n", VERSION);
         
         allocate_grid();
         grid_last_used = 0;
@@ -161,8 +159,6 @@ void get_input() {
                 
                 is_input_correct = 1;
         } while (is_input_correct == 0);
-        
-        printf("\nYour choice was %c-%d\n", x, y);
         
         grid_last_used++;
         grid[grid_last_used].x = gs.minx + (x - 'A');
@@ -278,10 +274,6 @@ int computer_play_count(int x, int y, int *num_x, int *num_o, NEXT_MOVE *nm, NEX
                 tmp_nm->priority++;
                 tmp_nm->empty_cnt++;                 
                 
-                //if (tmp_nm->stone_cnt >= 3) {
-                //        tmp_nm->priority += 2;
-                //}
-                
                 if ((tmp_nm->first == EMPTY) || 
                         ((tmp_nm->last != EMPTY) && (tmp_nm->move_x == 0) && (tmp_nm->move_y == 0)) ||
                         ((tmp_nm->last != EMPTY) && (tmp_nm->move_is_first == 1))
@@ -313,8 +305,6 @@ int computer_play_count(int x, int y, int *num_x, int *num_o, NEXT_MOVE *nm, NEX
                 tmp_nm->first = CROSS;
                 tmp_nm->priority += 2;
                 tmp_nm->stone_cnt++;
-                //if (tmp_nm->stone_cnt >= 3)
-                //        tmp_nm->priority += 2;
                 tmp_nm->last = CROSS;                                
         }
 
@@ -365,7 +355,7 @@ void print_grid(int move_no) {
         GRID_SIZE gs;
         
         get_grid_size(&gs);
-        printf("\n  Move No. #%d\n", move_no);
+        printf("\nMove #%d\n\n", move_no);
         printf("  ");
         #ifndef SCCZ80 
         putchar(' '); 
@@ -404,6 +394,7 @@ void print_grid(int move_no) {
                 }
                 putchar('\n');
         }
+        putchar('\n');
 }
 
 void get_grid_size(GRID_SIZE *gs) {
