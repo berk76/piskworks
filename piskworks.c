@@ -16,12 +16,12 @@
 extern long heap(60000);
 #endif
 
-#define VERSION "0.1.1"
+#define VERSION "0.1.2"
 #define GRID_OFFSET 2
 #define GRID_ALLOC_BLOCK 100;
  
 
-typedef enum {EMPTY, CROSS, CIRCLE} STONE; 
+typedef enum {UNKNOWN, EMPTY, CROSS, CIRCLE} STONE; 
 
 typedef struct {
         int x;
@@ -37,11 +37,13 @@ typedef struct {
 } GRID_SIZE;
 
 typedef struct {
+        STONE stone;
         STONE first;
         STONE last;
         int priority;
         int empty_cnt;
         int stone_cnt;
+        int stone_cnt_together;
         int move_x;
         int move_y;
         int move_is_first;
@@ -254,6 +256,9 @@ int check_and_play(int play) {
                 grid[grid_last_used].x = nm.move_x;
                 grid[grid_last_used].y = nm.move_y;
                 grid[grid_last_used].s = CIRCLE;
+                #ifdef DEBUG
+                printf("Priority: %d Count together: %d\n", nm.priority, nm.stone_cnt_together);
+                #endif
         }
         
         return 0;
@@ -266,10 +271,13 @@ int computer_play_count(int x, int y, int *num_x, int *num_o, NEXT_MOVE *nm, NEX
         if (stone == EMPTY) {
                 *num_x = 0;
                 *num_o = 0;
-                           
+                                                        
                 if (tmp_nm->last == EMPTY) {
                         move_copy_higher_priority(nm, tmp_nm);
                 }
+                
+                if (tmp_nm->first == UNKNOWN) 
+                        tmp_nm->first = EMPTY;
                 
                 tmp_nm->priority++;
                 tmp_nm->empty_cnt++;                 
@@ -280,7 +288,7 @@ int computer_play_count(int x, int y, int *num_x, int *num_o, NEXT_MOVE *nm, NEX
                         ) {
                                 tmp_nm->move_x = x;
                                 tmp_nm->move_y = y;
-                                tmp_nm->move_is_first = (tmp_nm->first == EMPTY);
+                                tmp_nm->move_is_first = (tmp_nm->stone == UNKNOWN);
                 }
                 
                 tmp_nm->last = EMPTY;
@@ -289,24 +297,44 @@ int computer_play_count(int x, int y, int *num_x, int *num_o, NEXT_MOVE *nm, NEX
                 *num_x = 0;
                 *num_o += 1;
                                                 
-                if (tmp_nm->first == CROSS) 
+                if (tmp_nm->stone == CROSS)
                         move_copy_higher_priority(nm, tmp_nm);
-                tmp_nm->first = CIRCLE;
+                tmp_nm->stone = CIRCLE;
+                if (tmp_nm->first == UNKNOWN)                        
+                        tmp_nm->first = CIRCLE;
                 tmp_nm->priority += 2;
                 tmp_nm->stone_cnt++;
+                if (tmp_nm->last == CIRCLE)                        
+                        tmp_nm->stone_cnt_together++;
                 tmp_nm->last = CIRCLE;                
         }
         if (stone == CROSS) {
                 *num_o = 0;
                 *num_x += 1;
                 
-                if (tmp_nm->first == CIRCLE)
+                if (tmp_nm->stone == CIRCLE)
                         move_copy_higher_priority(nm, tmp_nm);
-                tmp_nm->first = CROSS;
+                tmp_nm->stone = CROSS;
+                if (tmp_nm->first == UNKNOWN)                        
+                        tmp_nm->first = CROSS;
                 tmp_nm->priority += 2;
                 tmp_nm->stone_cnt++;
+                if (tmp_nm->last == CROSS)                        
+                        tmp_nm->stone_cnt_together++;
                 tmp_nm->last = CROSS;                                
         }
+        
+        /* handle urgent situation */
+        if ((tmp_nm->stone == CROSS) && (tmp_nm->stone_cnt_together == 3) && (tmp_nm->empty_cnt >= 2))
+                        tmp_nm->priority = 100;
+        if ((tmp_nm->stone == CIRCLE) && (tmp_nm->stone_cnt_together == 3) && (tmp_nm->empty_cnt >= 2))
+                        tmp_nm->priority = 101;
+        if ((tmp_nm->stone == CROSS) && (tmp_nm->stone_cnt_together == 4) && (tmp_nm->empty_cnt >= 1))
+                        tmp_nm->priority = 102;
+        if ((tmp_nm->stone == CIRCLE) && (tmp_nm->stone_cnt_together == 4) && (tmp_nm->empty_cnt >= 1))
+                        tmp_nm->priority = 103;
+        if (tmp_nm->priority > 99)
+                move_copy_higher_priority(nm, tmp_nm);
 
         
         if (*num_o == 5) {
@@ -319,7 +347,10 @@ int computer_play_count(int x, int y, int *num_x, int *num_o, NEXT_MOVE *nm, NEX
 }
 
 void move_copy_higher_priority(NEXT_MOVE *dest, NEXT_MOVE *src) {
-        if ((src->first != EMPTY) &&
+        if ((src->stone == CIRCLE) && (src->priority < 99))
+                src->priority +=2;
+                                        
+        if ((src->stone != UNKNOWN) &&
                 (src->priority > dest->priority) && 
                 !((src->move_x == 0) && (src->move_y == 0)))
                         move_copy(dest, src);
@@ -328,22 +359,26 @@ void move_copy_higher_priority(NEXT_MOVE *dest, NEXT_MOVE *src) {
 }
 
 void move_copy(NEXT_MOVE *dest, NEXT_MOVE *src) {
+        dest->stone = src->stone;
         dest->first = src->first;
         dest->last = src->last;
         dest->priority = src->priority;
         dest->empty_cnt = src->empty_cnt;
         dest->stone_cnt = src->stone_cnt;
+        dest->stone_cnt_together = src->stone_cnt_together;
         dest->move_x = src->move_x;
         dest->move_y = src->move_y;
         dest->move_is_first = src->move_is_first;        
 }
 
 void move_empty(NEXT_MOVE *m) {
-        m->first = EMPTY;
-        m->last = EMPTY;
+        m->stone = UNKNOWN;
+        m->first = UNKNOWN;
+        m->last = UNKNOWN;
         m->priority = 0;
         m->empty_cnt = 0;
         m->stone_cnt = 0;
+        m->stone_cnt_together = 1; /* important to have 1 */
         m->move_x = 0;
         m->move_y = 0;
         m->move_is_first = 1;        
