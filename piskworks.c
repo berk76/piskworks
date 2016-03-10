@@ -16,7 +16,7 @@
 extern long heap(60000);
 #endif
 
-#define VERSION "0.1.2"
+#define VERSION "0.1.3"
 #define GRID_OFFSET 2
 #define GRID_ALLOC_BLOCK 100;
  
@@ -69,7 +69,7 @@ static void deallocate_grid();
 
 
 int main(int argc, char **argv) {
-        int result, move_no;
+        int result, move_no, c;
         
         /* For Z88DK compiler */
         #ifdef SCCZ80
@@ -80,52 +80,57 @@ int main(int argc, char **argv) {
         printf("%c%c", 1, 32);   /* 32 characters */
         #endif
         
-        printf("Piskworks %s\n\n", VERSION);
-        
-        allocate_grid();
-        grid_last_used = 0;
-        move_no = 0;
-        grid[grid_last_used].x = 0;
-        grid[grid_last_used].y = 0;
-        grid[grid_last_used].s = CIRCLE;
-        print_grid(++move_no);
-        result = 0;
-        
         do {
-                if (grid_size <= grid_last_used + 2)
-                        allocate_grid();
-                         
-                get_input();
+                printf("Piskworks %s\n", VERSION);
+                
+                allocate_grid();
+                grid_last_used = 0;
+                move_no = 0;
+                grid[grid_last_used].x = 0;
+                grid[grid_last_used].y = 0;
+                grid[grid_last_used].s = CIRCLE;
                 print_grid(++move_no);
-                result = check_and_play(0);
+                result = 0;
                 
-                if (result == 0) {
-                        result = check_and_play(1);
+                do {
+                        if (grid_size <= grid_last_used + 2)
+                                allocate_grid();
+                                 
+                        get_input();
                         print_grid(++move_no);
-                }
-                
-                if (result == 0) {
                         result = check_and_play(0);
-                }
-
-        } while (result == 0);
+                        
+                        if (result == 0) {
+                                result = check_and_play(1);
+                                print_grid(++move_no);
+                        }
+                        
+                        if (result == 0) {
+                                result = check_and_play(0);
+                        }
         
-        printf("GAME OVER!\n");
-        if (result == 1) {
-                printf("Computer is winner\n");
-        } else {
-                printf("You are winner\n");
-        }        
+                } while (result == 0);
+                
+                printf("GAME OVER!\n");
+                if (result == 1) {
+                        printf("Computer is winner\n");
+                } else {
+                        printf("You are winner\n");
+                }        
+                
+                deallocate_grid();
+                
+                printf("\nAnother game? (y/n)\n");
+                c = getchar();
+                while (getchar() != '\n');      /* clear stdin */        
+        } while (strchr("Yy", c) != NULL);
         
-        printf("Press a key...\n");
-        getchar();        
-        deallocate_grid();
         return 0;
 }
 
 void get_input() {
         #define LINELEN 256
-        char *pc, line[LINELEN];
+        char line[LINELEN];
         int y, is_input_correct;
         char x;
         GRID_SIZE gs;
@@ -135,21 +140,17 @@ void get_input() {
 
         do {
                 is_input_correct = 0;                
-                printf("Put your move. (for ex. B-3)\n");
+                printf("Put your move. (for ex. B3)\n");
                 fgets(line, LINELEN - 1, stdin);
                
-                pc = strchr(line, '-');
-                if (pc == NULL)
-                        continue;
-                
-                if ((pc - line) != 1)
+                if (strlen(line) < 2)
                         continue;
                 
                 x = toupper(*line);
                 if ((x < 'A') || (x > 'Z'))
                         continue;
                 
-                y = atoi(pc + 1);                
+                y = atoi(line + 1);                
                 if (y == 0)
                         continue;
                         
@@ -418,10 +419,18 @@ void print_grid(int move_no) {
                                 putchar('.');
                         } else
                         if (stone == CIRCLE) {
-                                putchar('o');
+                                if ((grid[grid_last_used].x == (x + gs.minx)) && (grid[grid_last_used].y == (y + gs.miny))) {
+                                        putchar('O');
+                                } else {
+                                        putchar('o');
+                                }
                         } else
                         if (stone == CROSS) {
-                                putchar('x');
+                                if ((grid[grid_last_used].x == (x + gs.minx)) && (grid[grid_last_used].y == (y + gs.miny))) {
+                                        putchar('X');
+                                } else {
+                                        putchar('x');
+                                }
                         }
                         #ifndef SCCZ80 
                         putchar(' '); 
