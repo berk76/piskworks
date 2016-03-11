@@ -16,7 +16,7 @@
 extern long heap(60000);
 #endif
 
-#define VERSION "0.1.3"
+#define VERSION "0.1.4"
 #define GRID_OFFSET 2
 #define GRID_ALLOC_BLOCK 100;
  
@@ -283,9 +283,9 @@ int computer_play_count(int x, int y, int *num_x, int *num_o, NEXT_MOVE *nm, NEX
                 tmp_nm->priority++;
                 tmp_nm->empty_cnt++;                 
                 
-                if ((tmp_nm->first == EMPTY) || 
-                        ((tmp_nm->last != EMPTY) && (tmp_nm->move_x == 0) && (tmp_nm->move_y == 0)) ||
-                        ((tmp_nm->last != EMPTY) && (tmp_nm->move_is_first == 1))
+                if ((tmp_nm->stone == UNKNOWN) || 
+                        ((tmp_nm->stone != UNKNOWN) && (tmp_nm->move_x == 0) && (tmp_nm->move_y == 0)) ||
+                        ((tmp_nm->stone != UNKNOWN) && (tmp_nm->move_is_first == 1))
                         ) {
                                 tmp_nm->move_x = x;
                                 tmp_nm->move_y = y;
