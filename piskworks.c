@@ -16,7 +16,7 @@
 extern long heap(60000);
 #endif
 
-#define VERSION "0.1.4"
+#define VERSION "0.1.5"
 #define GRID_OFFSET 2
 #define GRID_ALLOC_BLOCK 100;
  
@@ -267,6 +267,7 @@ int check_and_play(int play) {
 
 int computer_play_count(int x, int y, int *num_x, int *num_o, NEXT_MOVE *nm, NEXT_MOVE *tmp_nm) {
         STONE stone;
+        NEXT_MOVE tmp;
         
         stone = get_stone(x, y);
         if (stone == EMPTY) {
@@ -298,8 +299,20 @@ int computer_play_count(int x, int y, int *num_x, int *num_o, NEXT_MOVE *nm, NEX
                 *num_x = 0;
                 *num_o += 1;
                                                 
-                if (tmp_nm->stone == CROSS)
+                if (tmp_nm->stone == CROSS) {
+                        tmp.last = tmp_nm->last;
+                        tmp.move_x = tmp_nm->move_x;
+                        tmp.move_y = tmp_nm->move_y; 
                         move_copy_higher_priority(nm, tmp_nm);
+                        if (tmp.last == EMPTY) {
+                                tmp_nm->first = EMPTY;
+                                tmp_nm->last = EMPTY;
+                                tmp_nm->move_x = tmp.move_x;
+                                tmp_nm->move_y = tmp.move_y;
+                                tmp_nm->move_is_first = 1;
+                                tmp_nm->priority++;        
+                        }
+                }
                 tmp_nm->stone = CIRCLE;
                 if (tmp_nm->first == UNKNOWN)                        
                         tmp_nm->first = CIRCLE;
@@ -313,8 +326,20 @@ int computer_play_count(int x, int y, int *num_x, int *num_o, NEXT_MOVE *nm, NEX
                 *num_o = 0;
                 *num_x += 1;
                 
-                if (tmp_nm->stone == CIRCLE)
+                if (tmp_nm->stone == CIRCLE) {
+                        tmp.last = tmp_nm->last;
+                        tmp.move_x = tmp_nm->move_x;
+                        tmp.move_y = tmp_nm->move_y;
                         move_copy_higher_priority(nm, tmp_nm);
+                        if (tmp.last == EMPTY) {
+                                tmp_nm->first = EMPTY;
+                                tmp_nm->last = EMPTY;
+                                tmp_nm->move_x = tmp.move_x;
+                                tmp_nm->move_y = tmp.move_y;
+                                tmp_nm->move_is_first = 1;
+                                tmp_nm->priority++;        
+                        }
+                }
                 tmp_nm->stone = CROSS;
                 if (tmp_nm->first == UNKNOWN)                        
                         tmp_nm->first = CROSS;
