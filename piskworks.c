@@ -16,7 +16,7 @@
 extern long heap(60000);
 #endif
 
-#define VERSION "0.1.5"
+#define VERSION "0.2.0"
 #define GRID_OFFSET 2
 #define GRID_ALLOC_BLOCK 100;
  
@@ -51,16 +51,17 @@ typedef struct {
 
 
 static FIELD *grid;
-static size_t grid_size;
-static size_t grid_last_used;
+static int grid_size;
+static int grid_last_used;
 static char cross_char;
 static char circle_char;
+static int computer_starts_game;
 
 
 static void get_input();
 static int check_and_play(int play);
 static int computer_play_count(int x, int y, int *num_x, int *num_o, NEXT_MOVE *nm, NEXT_MOVE *tmp_nm);
-static void print_grid(int move_no);
+static void print_grid();
 static void get_grid_size(GRID_SIZE *gs);
 static void move_copy_higher_priority(NEXT_MOVE *dest, NEXT_MOVE *src);
 static void move_copy(NEXT_MOVE *dest, NEXT_MOVE *src);
@@ -71,7 +72,7 @@ static void deallocate_grid();
 
 
 int main(int argc, char **argv) {
-        int result, move_no, c;
+        int result, c;
         
         /* For Z88DK compiler */
         #ifdef SCCZ80
@@ -97,14 +98,28 @@ int main(int argc, char **argv) {
                 circle_char = 'x';
         }
         
+        do {
+                printf("Do you want to put first move (y/n)?\n");
+                c = getchar();
+                while (getchar() != '\n');      /* clear stdin */        
+        } while (strchr("YyNn", c) == NULL);
+        
+        if (tolower(c) == 'y') {
+                computer_starts_game = 0;
+        } else {
+                computer_starts_game = 1;
+        }
+        
         do {    
                 allocate_grid();
-                grid_last_used = 0;
-                move_no = 0;
-                grid[grid_last_used].x = 0;
-                grid[grid_last_used].y = 0;
-                grid[grid_last_used].s = CIRCLE;
-                print_grid(++move_no);
+                grid_last_used = -1;
+                if (computer_starts_game) {
+                        grid_last_used++;
+                        grid[grid_last_used].x = 0;
+                        grid[grid_last_used].y = 0;
+                        grid[grid_last_used].s = CIRCLE;
+                }
+                print_grid();
                 result = 0;
                 
                 do {
@@ -112,12 +127,12 @@ int main(int argc, char **argv) {
                                 allocate_grid();
                                  
                         get_input();
-                        print_grid(++move_no);
+                        print_grid();
                         result = check_and_play(0);
                         
                         if (result == 0) {
                                 result = check_and_play(1);
-                                print_grid(++move_no);
+                                print_grid();
                         }
                         
                         if (result == 0) {
@@ -425,13 +440,13 @@ void move_empty(NEXT_MOVE *m) {
         m->move_is_first = 1;        
 }
 
-void print_grid(int move_no) {
-        size_t x, y;
+void print_grid() {
+        int x, y;
         STONE stone;
         GRID_SIZE gs;
         
         get_grid_size(&gs);
-        printf("\nMove #%d\n\n", move_no);
+        printf("\nMove #%d\n\n", grid_last_used + 1);
         printf("  ");
         #ifndef SCCZ80 
         putchar(' '); 
@@ -535,5 +550,5 @@ void allocate_grid() {
 void deallocate_grid() {
         free((void *) grid);
         grid_size = 0;
-        grid_last_used = 0;        
+        grid_last_used = -1;        
 }
