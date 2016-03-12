@@ -99,18 +99,18 @@ int main(int argc, char **argv) {
         }
         
         do {
-                printf("Do you want to put first move (y/n)?\n");
-                c = getchar();
-                while (getchar() != '\n');      /* clear stdin */        
-        } while (strchr("YyNn", c) == NULL);
-        
-        if (tolower(c) == 'y') {
-                computer_starts_game = 0;
-        } else {
-                computer_starts_game = 1;
-        }
-        
-        do {    
+                do {
+                        printf("Do you want to put first move (y/n)?\n");
+                        c = getchar();
+                        while (getchar() != '\n');      /* clear stdin */        
+                } while (strchr("YyNn", c) == NULL);
+                
+                if (tolower(c) == 'y') {
+                        computer_starts_game = 0;
+                } else {
+                        computer_starts_game = 1;
+                }
+                    
                 allocate_grid();
                 grid_last_used = -1;
                 if (computer_starts_game) {
@@ -146,6 +146,11 @@ int main(int argc, char **argv) {
                         printf("Computer is winner\n");
                 } else {
                         printf("You are winner\n");
+                }
+                if (computer_starts_game) {
+                        printf("(with option computer started)\n");
+                } else {
+                        printf("(with option you started)\n");
                 }        
                 
                 deallocate_grid();
