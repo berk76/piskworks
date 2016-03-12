@@ -53,6 +53,8 @@ typedef struct {
 static FIELD *grid;
 static size_t grid_size;
 static size_t grid_last_used;
+static char cross_char;
+static char circle_char;
 
 
 static void get_input();
@@ -80,9 +82,22 @@ int main(int argc, char **argv) {
         printf("%c%c", 1, 32);   /* 32 characters */
         #endif
         
+        printf("Piskworks %s\n", VERSION);
         do {
-                printf("Piskworks %s\n", VERSION);
-                
+                printf("Do you want to play with X or O?\n");
+                c = getchar();
+                while (getchar() != '\n');      /* clear stdin */        
+        } while (strchr("XxOo", c) == NULL);
+        
+        if (tolower(c) == 'x') {
+                cross_char = 'x';
+                circle_char = 'o';
+        } else {
+                cross_char = 'o';
+                circle_char = 'x';
+        }
+        
+        do {    
                 allocate_grid();
                 grid_last_used = 0;
                 move_no = 0;
@@ -445,16 +460,16 @@ void print_grid(int move_no) {
                         } else
                         if (stone == CIRCLE) {
                                 if ((grid[grid_last_used].x == (x + gs.minx)) && (grid[grid_last_used].y == (y + gs.miny))) {
-                                        putchar('O');
+                                        putchar(toupper(circle_char));
                                 } else {
-                                        putchar('o');
+                                        putchar(circle_char);
                                 }
                         } else
                         if (stone == CROSS) {
                                 if ((grid[grid_last_used].x == (x + gs.minx)) && (grid[grid_last_used].y == (y + gs.miny))) {
-                                        putchar('X');
+                                        putchar(toupper(cross_char));
                                 } else {
-                                        putchar('x');
+                                        putchar(cross_char);
                                 }
                         }
                         #ifndef SCCZ80 
