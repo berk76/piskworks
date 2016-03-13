@@ -58,6 +58,8 @@ static char circle_char;
 static int computer_starts_game;
 
 
+static void setup_preferences();
+static char get_oprion(char *message, char *values);
 static void get_input();
 static int check_and_play(int play);
 static int computer_play_count(int x, int y, int *num_x, int *num_o, NEXT_MOVE *nm, NEXT_MOVE *tmp_nm);
@@ -84,33 +86,9 @@ int main(int argc, char **argv) {
         #endif
         
         printf("Piskworks %s\n", VERSION);
-        do {
-                printf("Do you want to play with X or O?\n");
-                c = getchar();
-                while (getchar() != '\n');      /* clear stdin */        
-        } while (strchr("XxOo", c) == NULL);
-        
-        if (tolower(c) == 'x') {
-                cross_char = 'x';
-                circle_char = 'o';
-        } else {
-                cross_char = 'o';
-                circle_char = 'x';
-        }
         
         do {
-                do {
-                        printf("Do you want to put first move (y/n)?\n");
-                        c = getchar();
-                        while (getchar() != '\n');      /* clear stdin */        
-                } while (strchr("YyNn", c) == NULL);
-                
-                if (tolower(c) == 'y') {
-                        computer_starts_game = 0;
-                } else {
-                        computer_starts_game = 1;
-                }
-                    
+                setup_preferences();    
                 allocate_grid();
                 grid_last_used = -1;
                 if (computer_starts_game) {
@@ -155,12 +133,42 @@ int main(int argc, char **argv) {
                 
                 deallocate_grid();
                 
-                printf("\nAnother game? (y/n)\n");
-                c = getchar();
-                while (getchar() != '\n');      /* clear stdin */        
-        } while (strchr("Yy", c) != NULL);
+                c = get_oprion("\nAnother game? (y/n)", "YyNn");        
+        } while (tolower(c) == 'y');
         
         return 0;
+}
+
+void setup_preferences() {
+        char c;
+        
+        c = get_oprion("Do you want to play with X or O?", "XxOo");
+        if (tolower(c) == 'x') {
+                cross_char = 'x';
+                circle_char = 'o';
+        } else {
+                cross_char = 'o';
+                circle_char = 'x';
+        }
+        
+        c = get_oprion("Do you want to put first move (y/n)?", "YyNn");
+        if (tolower(c) == 'y') {
+                computer_starts_game = 0;
+        } else {
+                computer_starts_game = 1;
+        }
+}
+
+char get_oprion(char *message, char *values) {
+        char c;
+        
+        do {
+                puts(message);
+                c = getchar();
+                while (getchar() != '\n');      /* clear stdin */        
+        } while (strchr(values, c) == NULL);
+        
+        return c;
 }
 
 void get_input() {
