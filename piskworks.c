@@ -59,7 +59,7 @@ static int computer_starts_game;
 
 
 static void setup_preferences();
-static char get_oprion(char *message, char *values);
+static char get_option(char *message, char *values);
 static void get_input();
 static int check_and_play(int play);
 static int computer_play_count(int x, int y, int *num_x, int *num_o, NEXT_MOVE *nm, NEXT_MOVE *tmp_nm);
@@ -133,7 +133,7 @@ int main(int argc, char **argv) {
                 
                 deallocate_grid();
                 
-                c = get_oprion("\nAnother game? (y/n)", "YyNn");        
+                c = get_option("\nAnother game? (y/n)", "YyNn");        
         } while (tolower(c) == 'y');
         
         return 0;
@@ -142,7 +142,7 @@ int main(int argc, char **argv) {
 void setup_preferences() {
         char c;
         
-        c = get_oprion("Do you want to play with X or O?", "XxOo");
+        c = get_option("Do you want to play with X or O?", "XxOo");
         if (tolower(c) == 'x') {
                 cross_char = 'x';
                 circle_char = 'o';
@@ -151,7 +151,7 @@ void setup_preferences() {
                 circle_char = 'x';
         }
         
-        c = get_oprion("Do you want to put first move (y/n)?", "YyNn");
+        c = get_option("Do you want to put first move (y/n)?", "YyNn");
         if (tolower(c) == 'y') {
                 computer_starts_game = 0;
         } else {
@@ -159,7 +159,7 @@ void setup_preferences() {
         }
 }
 
-char get_oprion(char *message, char *values) {
+char get_option(char *message, char *values) {
         char c;
         
         do {
