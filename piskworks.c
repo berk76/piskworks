@@ -417,6 +417,7 @@ int computer_play(int x, int y, NEXT_MOVE *nm, NEXT_MOVE *tmp_nm) {
                         if (tmp.last == EMPTY) {
                                 tmp_nm->first = EMPTY;
                                 tmp_nm->last = EMPTY;
+                                tmp_nm->empty_cnt = 1;
                                 tmp_nm->move_x = tmp.move_x;
                                 tmp_nm->move_y = tmp.move_y;
                                 tmp_nm->move_is_first = 1;
@@ -444,6 +445,7 @@ int computer_play(int x, int y, NEXT_MOVE *nm, NEXT_MOVE *tmp_nm) {
                         if (tmp.last == EMPTY) {
                                 tmp_nm->first = EMPTY;
                                 tmp_nm->last = EMPTY;
+                                tmp_nm->empty_cnt = 1;
                                 tmp_nm->move_x = tmp.move_x;
                                 tmp_nm->move_y = tmp.move_y;
                                 tmp_nm->move_is_first = 1;
