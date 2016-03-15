@@ -57,6 +57,11 @@ static char cross_char;
 static char circle_char;
 static int computer_starts_game;
 
+#ifdef DEBUG
+static FILE *fout;
+#define FOUT "moves.out"
+#endif
+
 
 static void setup_preferences();
 static char get_option(char *message, char *values);
@@ -76,6 +81,10 @@ static void deallocate_grid();
 
 int main(int argc, char **argv) {
         int result, c;
+        
+        #ifdef DEBUG
+        fout = fopen(FOUT, "w");
+        #endif
         
         /* For Z88DK compiler */
         #ifdef SCCZ80
@@ -121,6 +130,10 @@ int main(int argc, char **argv) {
                 } while (result == 0);
                 
                 printf("GAME OVER!\n");
+                #ifdef DEBUG
+                fprintf(fout, "GAME OVER!\n");
+                fflush(fout);
+                #endif
                 if (result == 1) {
                         printf("Computer is winner\n");
                 } else {
@@ -136,6 +149,10 @@ int main(int argc, char **argv) {
                 
                 c = get_option("\nAnother game? (y/n)", "YyNn");        
         } while (tolower(c) == 'y');
+        
+        #ifdef DEBUG
+        fclose(fout);
+        #endif
         
         return 0;
 }
@@ -211,6 +228,11 @@ void get_input() {
         grid[grid_last_used].x = gs.minx + (x - 'A');
         grid[grid_last_used].y = gs.miny + y - 1;
         grid[grid_last_used].s = CROSS;
+        
+        #ifdef DEBUG
+        fprintf(fout, "%c%d\n", x, y);
+        fflush(fout);
+        #endif
 }
 
 int check_and_play(int play) {
