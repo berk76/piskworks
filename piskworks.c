@@ -64,7 +64,7 @@ static FILE *fout;
 
 
 static void setup_preferences();
-static char get_option(char *message, char *values);
+static int get_option(char *message, char *values);
 static void get_input();
 static int check_and_play(int play);
 static int computer_count(int x, int y, int *num_x, int *num_o);
@@ -158,7 +158,7 @@ int main(int argc, char **argv) {
 }
 
 void setup_preferences() {
-        char c;
+        int c;
         
         c = get_option("Do you want to play with X or O?", "XxOo");
         if (tolower(c) == 'x') {
@@ -177,8 +177,8 @@ void setup_preferences() {
         }
 }
 
-char get_option(char *message, char *values) {
-        char c;
+int get_option(char *message, char *values) {
+        int c;
         
         do {
                 puts(message);
