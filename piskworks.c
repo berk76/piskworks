@@ -16,7 +16,7 @@
 extern long heap(60000);
 #endif
 
-#define VERSION "0.2.1"
+#define VERSION "0.2.2"
 #define GRID_OFFSET 2
 #define GRID_ALLOC_BLOCK 100;
  
@@ -56,6 +56,7 @@ static int grid_last_used;
 static char cross_char;
 static char circle_char;
 static int computer_starts_game;
+static int score_computer, score_player;
 
 #ifdef DEBUG
 static FILE *fout;
@@ -94,6 +95,8 @@ int main(int argc, char **argv) {
         printf("%c",12);         /* cls */
         printf("%c%c", 1, 32);   /* 32 characters */
         #endif
+        score_computer = 0;
+        score_player = 0;
         
         printf("Piskworks %s\n", VERSION);
         
@@ -135,8 +138,10 @@ int main(int argc, char **argv) {
                 fflush(fout);
                 #endif
                 if (result == 1) {
+                        score_computer++;
                         printf("Computer is winner\n");
                 } else {
+                        score_player++;
                         printf("You are winner\n");
                 }
                 if (computer_starts_game) {
@@ -147,6 +152,7 @@ int main(int argc, char **argv) {
                 
                 deallocate_grid();
                 
+                printf("Computer:You  %d:%d\n", score_computer, score_player);
                 c = get_option("\nAnother game? (y/n)", "YyNn");        
         } while (tolower(c) == 'y');
         
