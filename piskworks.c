@@ -16,9 +16,10 @@
 extern long heap(60000);
 #endif
 
-#define VERSION "0.2.2"
+#define VERSION "0.3.0"
 #define GRID_OFFSET 2
 #define GRID_ALLOC_BLOCK 100;
+#define FREE_DOUBLE_BUFF_SIZE 20
  
 
 typedef enum {UNKNOWN, EMPTY, CROSS, CIRCLE} STONE; 
@@ -49,6 +50,12 @@ typedef struct {
         int move_is_first;
 } NEXT_MOVE;
 
+typedef struct {
+        int x;
+        int y;
+        int count;
+} FREE_DOUBLE;
+
 
 static FIELD *grid;
 static int grid_size;
@@ -69,12 +76,13 @@ static int get_option(char *message, char *values);
 static void get_input();
 static int check_and_play(int play);
 static int computer_count(int x, int y, int *num_x, int *num_o);
-static int computer_play(int x, int y, NEXT_MOVE *nm, NEXT_MOVE *tmp_nm);
-static void print_grid();
-static void get_grid_size(GRID_SIZE *gs);
+static int computer_play(int x, int y, NEXT_MOVE *nm, NEXT_MOVE *tmp_nm, FREE_DOUBLE *free_double);
 static void move_copy_higher_priority(NEXT_MOVE *dest, NEXT_MOVE *src);
 static void move_copy(NEXT_MOVE *dest, NEXT_MOVE *src);
 static void move_empty(NEXT_MOVE *m);
+static void add_free_double(int x, int y, FREE_DOUBLE *free_double, NEXT_MOVE *nm);
+static void print_grid();
+static void get_grid_size(GRID_SIZE *gs);
 static STONE get_stone(int x, int y);
 static void allocate_grid();
 static void deallocate_grid();
@@ -247,7 +255,9 @@ int check_and_play(int play) {
         GRID_SIZE gs;
         int result;
         NEXT_MOVE nm, tmp_nm;
+        FREE_DOUBLE free_double[FREE_DOUBLE_BUFF_SIZE];
         
+        free_double[0].count = -1;
         get_grid_size(&gs);
         move_empty(&nm);
         
@@ -259,7 +269,7 @@ int check_and_play(int play) {
                 move_empty(&tmp_nm);
                 for (x = 0; x <= (gs.maxx - gs.minx); x++) {
                         if (play) {
-                                result = computer_play(x + gs.minx, y + gs.miny, &nm, &tmp_nm);
+                                result = computer_play(x + gs.minx, y + gs.miny, &nm, &tmp_nm, free_double);
                         } else {
                                 result = computer_count(x + gs.minx, y + gs.miny, &num_x, &num_o);
                         }
@@ -275,7 +285,7 @@ int check_and_play(int play) {
                 move_empty(&tmp_nm);
                 for (y = 0; y <= (gs.maxy - gs.miny); y++) {
                         if (play) {
-                                result = computer_play(x + gs.minx, y + gs.miny, &nm, &tmp_nm);
+                                result = computer_play(x + gs.minx, y + gs.miny, &nm, &tmp_nm, free_double);
                         } else {
                                 result = computer_count(x + gs.minx, y + gs.miny, &num_x, &num_o);
                         }
@@ -285,13 +295,13 @@ int check_and_play(int play) {
                 move_copy_higher_priority(&nm, &tmp_nm); 
         }
         /* Askew left-right */
-        for (x = (gs.maxx - gs.minx); x >= 0 ; x--) {
+        for (x = (gs.maxx - gs.minx); x > 0 ; x--) {
                 num_x = 0;
                 num_o = 0;
                 move_empty(&tmp_nm);
                 for (xx = x, yy = 0; (xx <= (gs.maxx - gs.minx)) && (yy <= (gs.maxy - gs.miny)); xx++, yy++) {
                         if (play) {
-                                result = computer_play(xx + gs.minx, yy + gs.miny, &nm, &tmp_nm);
+                                result = computer_play(xx + gs.minx, yy + gs.miny, &nm, &tmp_nm, free_double);
                         } else {
                                 result = computer_count(xx + gs.minx, yy + gs.miny, &num_x, &num_o);
                         }
@@ -306,7 +316,7 @@ int check_and_play(int play) {
                 move_empty(&tmp_nm);
                 for (xx = 0, yy = y; (xx <= (gs.maxx - gs.minx)) && (yy <= (gs.maxy - gs.miny)); xx++, yy++) {
                         if (play) {
-                                result = computer_play(xx + gs.minx, yy + gs.miny, &nm, &tmp_nm);
+                                result = computer_play(xx + gs.minx, yy + gs.miny, &nm, &tmp_nm, free_double);
                         } else {
                                 result = computer_count(xx + gs.minx, yy + gs.miny, &num_x, &num_o);
                         }
@@ -316,13 +326,13 @@ int check_and_play(int play) {
                 move_copy_higher_priority(&nm, &tmp_nm);
         }
         /* Askew right-left */
-        for (x = 0; x <= (gs.maxx - gs.minx) ; x++) {
+        for (x = 0; x < (gs.maxx - gs.minx) ; x++) {
                 num_x = 0;
                 num_o = 0;
                 move_empty(&tmp_nm);
                 for (xx = x, yy = 0; (xx >= 0) && (yy <= (gs.maxy - gs.miny)); xx--, yy++) {
                         if (play) {
-                                result = computer_play(xx + gs.minx, yy + gs.miny, &nm, &tmp_nm);
+                                result = computer_play(xx + gs.minx, yy + gs.miny, &nm, &tmp_nm, free_double);
                         } else {
                                 result = computer_count(xx + gs.minx, yy + gs.miny, &num_x, &num_o);
                         }
@@ -337,7 +347,7 @@ int check_and_play(int play) {
                 move_empty(&tmp_nm);
                 for (xx = (gs.maxx - gs.minx), yy = y; (xx >= 0) && (yy <= (gs.maxy - gs.miny)); xx--, yy++) {
                         if (play) {
-                                result = computer_play(xx + gs.minx, yy + gs.miny, &nm, &tmp_nm);
+                                result = computer_play(xx + gs.minx, yy + gs.miny, &nm, &tmp_nm, free_double);
                         } else {
                                 result = computer_count(xx + gs.minx, yy + gs.miny, &num_x, &num_o);
                         }
@@ -387,7 +397,7 @@ int computer_count(int x, int y, int *num_x, int *num_o) {
         return 0;
 }
 
-int computer_play(int x, int y, NEXT_MOVE *nm, NEXT_MOVE *tmp_nm) {
+int computer_play(int x, int y, NEXT_MOVE *nm, NEXT_MOVE *tmp_nm, FREE_DOUBLE *free_double) {
         STONE stone;
         NEXT_MOVE tmp;
         
@@ -395,6 +405,17 @@ int computer_play(int x, int y, NEXT_MOVE *nm, NEXT_MOVE *tmp_nm) {
         if (stone == EMPTY) {                             
                 if (tmp_nm->last == EMPTY) {
                         move_copy_higher_priority(nm, tmp_nm);
+                }
+                
+                /* add doubles*/
+                if ((tmp_nm->stone == CROSS) && (tmp_nm->first == EMPTY) && 
+                        (tmp_nm->move_is_first == 1) && (tmp_nm->stone_cnt_together == 2)) {
+                        #ifdef DEBUG
+                        printf("Adding doubles\n");
+                        #endif
+                        
+                        add_free_double(tmp_nm->move_x, tmp_nm->move_y, free_double, nm);
+                        add_free_double(x, y, free_double, nm);
                 }
                 
                 if (tmp_nm->first == UNKNOWN) 
@@ -522,6 +543,37 @@ void move_empty(NEXT_MOVE *m) {
         m->move_x = 0;
         m->move_y = 0;
         m->move_is_first = 1;        
+}
+
+void add_free_double(int x, int y, FREE_DOUBLE *free_double, NEXT_MOVE *nm) {
+        FREE_DOUBLE *p = free_double;
+        int i;
+        
+        for(i = 0; i < FREE_DOUBLE_BUFF_SIZE; i++, p++) {
+                if (p->count == -1) {
+                        p->x = x;
+                        p->y = y;
+                        p->count = 1;
+                        if ((i + 1) < FREE_DOUBLE_BUFF_SIZE) {
+                                (p + 1)->count = -1;
+                        }
+                        return;
+                }
+                if ((p->x == x) && (p->y == y)) {
+                        p->count += 1;
+                        if (nm->priority < 50) {
+                                move_empty(nm);
+                                nm->move_x = p->x;
+                                nm->move_y = p->y;
+                                nm->priority = 50;
+                        }
+                        return;
+                }
+        }
+        
+        #ifdef DEBUG
+        printf("Doubles is out of buffer (%d)\n", FREE_DOUBLE_BUFF_SIZE);
+        #endif  
 }
 
 void print_grid() {
