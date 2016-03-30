@@ -16,7 +16,7 @@
 extern long heap(60000);
 #endif
 
-#define VERSION "0.3.0"
+#define VERSION "0.3.1"
 #define GRID_OFFSET 2
 #define GRID_ALLOC_BLOCK 100;
 #define FREE_DOUBLE_BUFF_SIZE 20
@@ -54,6 +54,7 @@ typedef struct {
         int x;
         int y;
         int count;
+        STONE stone;
 } FREE_DOUBLE;
 
 
@@ -80,7 +81,7 @@ static int computer_play(int x, int y, NEXT_MOVE *nm, NEXT_MOVE *tmp_nm, FREE_DO
 static void move_copy_higher_priority(NEXT_MOVE *dest, NEXT_MOVE *src);
 static void move_copy(NEXT_MOVE *dest, NEXT_MOVE *src);
 static void move_empty(NEXT_MOVE *m);
-static void add_free_double(int x, int y, FREE_DOUBLE *free_double, NEXT_MOVE *nm);
+static void add_free_double(int x, int y, STONE stone, FREE_DOUBLE *free_double, NEXT_MOVE *nm);
 static void print_grid();
 static void get_grid_size(GRID_SIZE *gs);
 static STONE get_stone(int x, int y);
@@ -408,14 +409,14 @@ int computer_play(int x, int y, NEXT_MOVE *nm, NEXT_MOVE *tmp_nm, FREE_DOUBLE *f
                 }
                 
                 /* add doubles*/
-                if ((tmp_nm->stone == CROSS) && (tmp_nm->first == EMPTY) && 
+                if ((tmp_nm->first == EMPTY) && 
                         (tmp_nm->move_is_first == 1) && (tmp_nm->stone_cnt_together == 2)) {
                         #ifdef DEBUG
-                        printf("Adding doubles\n");
+                        printf("Adding doubles %s\n", (tmp_nm->stone == CROSS) ? "cross" : "circle");
                         #endif
                         
-                        add_free_double(tmp_nm->move_x, tmp_nm->move_y, free_double, nm);
-                        add_free_double(x, y, free_double, nm);
+                        add_free_double(tmp_nm->move_x, tmp_nm->move_y, tmp_nm->stone, free_double, nm);
+                        add_free_double(x, y, tmp_nm->stone, free_double, nm);
                 }
                 
                 if (tmp_nm->first == UNKNOWN) 
@@ -545,7 +546,7 @@ void move_empty(NEXT_MOVE *m) {
         m->move_is_first = 1;        
 }
 
-void add_free_double(int x, int y, FREE_DOUBLE *free_double, NEXT_MOVE *nm) {
+void add_free_double(int x, int y, STONE stone, FREE_DOUBLE *free_double, NEXT_MOVE *nm) {
         FREE_DOUBLE *p = free_double;
         int i;
         
@@ -554,12 +555,13 @@ void add_free_double(int x, int y, FREE_DOUBLE *free_double, NEXT_MOVE *nm) {
                         p->x = x;
                         p->y = y;
                         p->count = 1;
+                        p->stone = stone;
                         if ((i + 1) < FREE_DOUBLE_BUFF_SIZE) {
                                 (p + 1)->count = -1;
                         }
                         return;
                 }
-                if ((p->x == x) && (p->y == y)) {
+                if ((p->x == x) && (p->y == y) && (p->stone == stone)) {
                         p->count += 1;
                         if (nm->priority < 50) {
                                 move_empty(nm);
