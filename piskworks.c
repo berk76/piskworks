@@ -16,10 +16,10 @@
 extern long heap(60000);
 #endif
 
-#define VERSION "0.3.1"
+#define VERSION "0.3.2"
 #define GRID_OFFSET 2
 #define GRID_ALLOC_BLOCK 100;
-#define FREE_DOUBLE_BUFF_SIZE 20
+#define FREE_DOUBLE_ALLOC_BLOCK 20
  
 
 typedef enum {UNKNOWN, EMPTY, CROSS, CIRCLE} STONE; 
@@ -57,10 +57,16 @@ typedef struct {
         STONE stone;
 } FREE_DOUBLE;
 
-
+/* grid */
 static FIELD *grid;
 static int grid_size;
 static int grid_last_used;
+
+/* free double vector */
+static FREE_DOUBLE *free_double;
+static int free_double_size;
+static int free_double_last_used;
+
 static char cross_char;
 static char circle_char;
 static int computer_starts_game;
@@ -77,16 +83,18 @@ static int get_option(char *message, char *values);
 static void get_input();
 static int check_and_play(int play);
 static int computer_count(int x, int y, int *num_x, int *num_o);
-static int computer_play(int x, int y, NEXT_MOVE *nm, NEXT_MOVE *tmp_nm, FREE_DOUBLE *free_double);
+static int computer_play(int x, int y, NEXT_MOVE *nm, NEXT_MOVE *tmp_nm);
 static void move_copy_higher_priority(NEXT_MOVE *dest, NEXT_MOVE *src);
 static void move_copy(NEXT_MOVE *dest, NEXT_MOVE *src);
 static void move_empty(NEXT_MOVE *m);
-static void add_free_double(int x, int y, STONE stone, FREE_DOUBLE *free_double, NEXT_MOVE *nm);
+static void add_free_double(int x, int y, STONE stone, NEXT_MOVE *nm);
 static void print_grid();
 static void get_grid_size(GRID_SIZE *gs);
 static STONE get_stone(int x, int y);
 static void allocate_grid();
 static void deallocate_grid();
+static void allocate_free_double();
+static void deallocate_free_double();
 
 
 int main(int argc, char **argv) {
@@ -108,10 +116,14 @@ int main(int argc, char **argv) {
         score_player = 0;
         
         printf("Piskworks %s\n", VERSION);
+        grid_size = 0;
+        allocate_grid();
+        free_double_size = 0;
+        allocate_free_double();
         
         do {
                 setup_preferences();    
-                allocate_grid();
+                
                 grid_last_used = -1;
                 if (computer_starts_game) {
                         grid_last_used++;
@@ -159,8 +171,6 @@ int main(int argc, char **argv) {
                         printf("(with option you started)\n");
                 }        
                 
-                deallocate_grid();
-                
                 printf("Computer:You  %d:%d\n", score_computer, score_player);
                 c = get_option("\nAnother game? (y/n)", "YyNn");        
         } while (tolower(c) == 'y');
@@ -169,6 +179,8 @@ int main(int argc, char **argv) {
         fclose(fout);
         #endif
         
+        deallocate_grid();
+        deallocate_free_double();
         return 0;
 }
 
@@ -256,11 +268,10 @@ int check_and_play(int play) {
         GRID_SIZE gs;
         int result;
         NEXT_MOVE nm, tmp_nm;
-        FREE_DOUBLE free_double[FREE_DOUBLE_BUFF_SIZE];
         
-        free_double[0].count = -1;
         get_grid_size(&gs);
         move_empty(&nm);
+        free_double_last_used = -1;
         
 
         /* Lines */        
@@ -270,7 +281,7 @@ int check_and_play(int play) {
                 move_empty(&tmp_nm);
                 for (x = 0; x <= (gs.maxx - gs.minx); x++) {
                         if (play) {
-                                result = computer_play(x + gs.minx, y + gs.miny, &nm, &tmp_nm, free_double);
+                                result = computer_play(x + gs.minx, y + gs.miny, &nm, &tmp_nm);
                         } else {
                                 result = computer_count(x + gs.minx, y + gs.miny, &num_x, &num_o);
                         }
@@ -286,7 +297,7 @@ int check_and_play(int play) {
                 move_empty(&tmp_nm);
                 for (y = 0; y <= (gs.maxy - gs.miny); y++) {
                         if (play) {
-                                result = computer_play(x + gs.minx, y + gs.miny, &nm, &tmp_nm, free_double);
+                                result = computer_play(x + gs.minx, y + gs.miny, &nm, &tmp_nm);
                         } else {
                                 result = computer_count(x + gs.minx, y + gs.miny, &num_x, &num_o);
                         }
@@ -302,7 +313,7 @@ int check_and_play(int play) {
                 move_empty(&tmp_nm);
                 for (xx = x, yy = 0; (xx <= (gs.maxx - gs.minx)) && (yy <= (gs.maxy - gs.miny)); xx++, yy++) {
                         if (play) {
-                                result = computer_play(xx + gs.minx, yy + gs.miny, &nm, &tmp_nm, free_double);
+                                result = computer_play(xx + gs.minx, yy + gs.miny, &nm, &tmp_nm);
                         } else {
                                 result = computer_count(xx + gs.minx, yy + gs.miny, &num_x, &num_o);
                         }
@@ -317,7 +328,7 @@ int check_and_play(int play) {
                 move_empty(&tmp_nm);
                 for (xx = 0, yy = y; (xx <= (gs.maxx - gs.minx)) && (yy <= (gs.maxy - gs.miny)); xx++, yy++) {
                         if (play) {
-                                result = computer_play(xx + gs.minx, yy + gs.miny, &nm, &tmp_nm, free_double);
+                                result = computer_play(xx + gs.minx, yy + gs.miny, &nm, &tmp_nm);
                         } else {
                                 result = computer_count(xx + gs.minx, yy + gs.miny, &num_x, &num_o);
                         }
@@ -333,7 +344,7 @@ int check_and_play(int play) {
                 move_empty(&tmp_nm);
                 for (xx = x, yy = 0; (xx >= 0) && (yy <= (gs.maxy - gs.miny)); xx--, yy++) {
                         if (play) {
-                                result = computer_play(xx + gs.minx, yy + gs.miny, &nm, &tmp_nm, free_double);
+                                result = computer_play(xx + gs.minx, yy + gs.miny, &nm, &tmp_nm);
                         } else {
                                 result = computer_count(xx + gs.minx, yy + gs.miny, &num_x, &num_o);
                         }
@@ -348,7 +359,7 @@ int check_and_play(int play) {
                 move_empty(&tmp_nm);
                 for (xx = (gs.maxx - gs.minx), yy = y; (xx >= 0) && (yy <= (gs.maxy - gs.miny)); xx--, yy++) {
                         if (play) {
-                                result = computer_play(xx + gs.minx, yy + gs.miny, &nm, &tmp_nm, free_double);
+                                result = computer_play(xx + gs.minx, yy + gs.miny, &nm, &tmp_nm);
                         } else {
                                 result = computer_count(xx + gs.minx, yy + gs.miny, &num_x, &num_o);
                         }
@@ -398,7 +409,7 @@ int computer_count(int x, int y, int *num_x, int *num_o) {
         return 0;
 }
 
-int computer_play(int x, int y, NEXT_MOVE *nm, NEXT_MOVE *tmp_nm, FREE_DOUBLE *free_double) {
+int computer_play(int x, int y, NEXT_MOVE *nm, NEXT_MOVE *tmp_nm) {
         STONE stone;
         NEXT_MOVE tmp;
         
@@ -415,8 +426,8 @@ int computer_play(int x, int y, NEXT_MOVE *nm, NEXT_MOVE *tmp_nm, FREE_DOUBLE *f
                         printf("Adding doubles %s\n", (tmp_nm->stone == CROSS) ? "cross" : "circle");
                         #endif
                         
-                        add_free_double(tmp_nm->move_x, tmp_nm->move_y, tmp_nm->stone, free_double, nm);
-                        add_free_double(x, y, tmp_nm->stone, free_double, nm);
+                        add_free_double(tmp_nm->move_x, tmp_nm->move_y, tmp_nm->stone, nm);
+                        add_free_double(x, y, tmp_nm->stone, nm);
                 }
                 
                 if (tmp_nm->first == UNKNOWN) 
@@ -546,36 +557,33 @@ void move_empty(NEXT_MOVE *m) {
         m->move_is_first = 1;        
 }
 
-void add_free_double(int x, int y, STONE stone, FREE_DOUBLE *free_double, NEXT_MOVE *nm) {
+void add_free_double(int x, int y, STONE stone, NEXT_MOVE *nm) {
         FREE_DOUBLE *p = free_double;
         int i;
         
-        for(i = 0; i < FREE_DOUBLE_BUFF_SIZE; i++, p++) {
-                if (p->count == -1) {
-                        p->x = x;
-                        p->y = y;
-                        p->count = 1;
-                        p->stone = stone;
-                        if ((i + 1) < FREE_DOUBLE_BUFF_SIZE) {
-                                (p + 1)->count = -1;
-                        }
-                        return;
-                }
-                if ((p->x == x) && (p->y == y) && (p->stone == stone)) {
-                        p->count += 1;
+        for(i = 0; i <= free_double_last_used; i++) {
+                if ((p[i].x == x) && (p[i].y == y) && (p[i].stone == stone)) {
+                        p[i].count += 1;
                         if (nm->priority < 50) {
                                 move_empty(nm);
-                                nm->move_x = p->x;
-                                nm->move_y = p->y;
-                                nm->priority = 50;
+                                nm->move_x = p[i].x;
+                                nm->move_y = p[i].y;
+                                nm->priority = (p[i].stone == CIRCLE) ? 50 : 49;
                         }
                         return;
                 }
         }
         
-        #ifdef DEBUG
-        printf("Doubles is out of buffer (%d)\n", FREE_DOUBLE_BUFF_SIZE);
-        #endif  
+        free_double_last_used++;
+        if (free_double_last_used >= free_double_size) {
+                allocate_free_double();
+        }
+        p[free_double_last_used].x = x;
+        p[free_double_last_used].y = y;
+        p[free_double_last_used].count = 1;
+        p[free_double_last_used].stone = stone;
+        
+        return;
 }
 
 void print_grid() {
@@ -689,4 +697,25 @@ void deallocate_grid() {
         free((void *) grid);
         grid_size = 0;
         grid_last_used = -1;        
+}
+
+void allocate_free_double() {
+        if (free_double_size == 0) {
+                free_double_size = FREE_DOUBLE_ALLOC_BLOCK;
+                free_double = (FREE_DOUBLE *) malloc (sizeof(FREE_DOUBLE) * free_double_size);  
+        } else {
+                free_double_size += FREE_DOUBLE_ALLOC_BLOCK;
+                free_double = (FREE_DOUBLE *) realloc (free_double, sizeof(FREE_DOUBLE) * free_double_size);
+        }
+        
+        if (free_double == NULL) {
+                printf("Out of memory\n");
+                exit(1);
+        }
+}
+
+void deallocate_free_double() {
+        free((void *) free_double);
+        free_double_size = 0;
+        free_double_last_used = -1;
 }
