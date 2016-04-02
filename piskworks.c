@@ -16,7 +16,7 @@
 extern long heap(60000);
 #endif
 
-#define VERSION "0.3.2"
+#define VERSION "0.3.3"
 #define GRID_OFFSET 2
 #define GRID_ALLOC_BLOCK 100;
 #define FREE_DOUBLE_ALLOC_BLOCK 20
@@ -71,6 +71,7 @@ static char cross_char;
 static char circle_char;
 static int computer_starts_game;
 static int score_computer, score_player;
+static int difficulty;
 
 #ifdef DEBUG
 static FILE *fout;
@@ -165,11 +166,7 @@ int main(int argc, char **argv) {
                         score_player++;
                         printf("You are winner\n");
                 }
-                if (computer_starts_game) {
-                        printf("(with option computer started)\n");
-                } else {
-                        printf("(with option you started)\n");
-                }        
+                printf("(difficulty=%d, %s started)\n", difficulty, (computer_starts_game) ? "computer" : "you");        
                 
                 printf("Computer:You  %d:%d\n", score_computer, score_player);
                 c = get_option("\nAnother game? (y/n)", "YyNn");        
@@ -186,7 +183,7 @@ int main(int argc, char **argv) {
 
 void setup_preferences() {
         int c;
-        
+                
         c = get_option("Do you want to play with X or O?", "XxOo");
         if (tolower(c) == 'x') {
                 cross_char = 'x';
@@ -195,6 +192,9 @@ void setup_preferences() {
                 cross_char = 'o';
                 circle_char = 'x';
         }
+        
+        c = get_option("Which difficulty (1,2,3)?", "123");
+        difficulty = c - '1' + 1;
         
         c = get_option("Do you want to put first move (y/n)?", "YyNn");
         if (tolower(c) == 'y') {
@@ -420,7 +420,7 @@ int computer_play(int x, int y, NEXT_MOVE *nm, NEXT_MOVE *tmp_nm) {
                 }
                 
                 /* add doubles*/
-                if ((tmp_nm->first == EMPTY) && 
+                if ((difficulty > 2) && (tmp_nm->first == EMPTY) && 
                         (tmp_nm->move_is_first == 1) && (tmp_nm->stone_cnt_together == 2)) {
                         #ifdef DEBUG
                         printf("Adding doubles %s\n", (tmp_nm->stone == CROSS) ? "cross" : "circle");
@@ -505,16 +505,18 @@ int computer_play(int x, int y, NEXT_MOVE *nm, NEXT_MOVE *tmp_nm) {
         }
         
         /* handle urgent situation */
-        if ((tmp_nm->stone == CROSS) && (tmp_nm->stone_cnt_together == 3) && (tmp_nm->empty_cnt >= 2))
-                        tmp_nm->priority = 100;
-        if ((tmp_nm->stone == CIRCLE) && (tmp_nm->stone_cnt_together == 3) && (tmp_nm->empty_cnt >= 2))
-                        tmp_nm->priority = 101;
-        if ((tmp_nm->stone == CROSS) && (tmp_nm->stone_cnt_together == 4) && (tmp_nm->empty_cnt >= 1))
-                        tmp_nm->priority = 102;
-        if ((tmp_nm->stone == CIRCLE) && (tmp_nm->stone_cnt_together == 4) && (tmp_nm->empty_cnt >= 1))
-                        tmp_nm->priority = 103;
-        if (tmp_nm->priority > 99)
-                move_copy_higher_priority(nm, tmp_nm);
+        if (difficulty > 1) {
+                if ((tmp_nm->stone == CROSS) && (tmp_nm->stone_cnt_together == 3) && (tmp_nm->empty_cnt >= 2))
+                                tmp_nm->priority = 100;
+                if ((tmp_nm->stone == CIRCLE) && (tmp_nm->stone_cnt_together == 3) && (tmp_nm->empty_cnt >= 2))
+                                tmp_nm->priority = 101;
+                if ((tmp_nm->stone == CROSS) && (tmp_nm->stone_cnt_together == 4) && (tmp_nm->empty_cnt >= 1))
+                                tmp_nm->priority = 102;
+                if ((tmp_nm->stone == CIRCLE) && (tmp_nm->stone_cnt_together == 4) && (tmp_nm->empty_cnt >= 1))
+                                tmp_nm->priority = 103;
+                if (tmp_nm->priority > 99)
+                        move_copy_higher_priority(nm, tmp_nm);
+        }
 
         return 0;
 }
