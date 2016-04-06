@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 /* For Z88DK compiler */
 #ifdef SCCZ80
@@ -23,10 +24,12 @@
 extern long heap(60000);
 #endif
 
-#define VERSION "0.3.4"
+#define VERSION "0.3.5"
 #define GRID_OFFSET 2
 #define GRID_ALLOC_BLOCK 100;
 #define FREE_DOUBLE_ALLOC_BLOCK 20
+
+#define random_condition() (rand() % 2)
  
 
 typedef enum {UNKNOWN, EMPTY, CROSS, CIRCLE} STONE; 
@@ -120,6 +123,9 @@ int main(int argc, char **argv) {
         printf("%c",12);         /* cls */
         printf("%c%c", 1, 32);   /* 32 characters */
         #endif
+        
+        srand(time(NULL) % 37);
+        
         score_computer = 0;
         score_player = 0;
         
@@ -540,7 +546,7 @@ void move_copy_higher_priority(NEXT_MOVE *dest, NEXT_MOVE *src) {
                 src->priority +=2;
                                         
         if ((src->stone != UNKNOWN) &&
-                (src->priority > dest->priority) && 
+                ((src->priority > dest->priority) || ((src->priority == dest->priority) && random_condition())) && 
                 !((src->move_x == 0) && (src->move_y == 0)))
                         move_copy(dest, src);
                                 
