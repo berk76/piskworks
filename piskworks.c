@@ -23,7 +23,7 @@
 extern long heap(60000);
 #endif
 
-#define VERSION "0.3.3"
+#define VERSION "0.3.4"
 #define GRID_OFFSET 2
 #define GRID_ALLOC_BLOCK 100;
 #define FREE_DOUBLE_ALLOC_BLOCK 20
@@ -297,7 +297,7 @@ int check_and_play(int play) {
                 }
                 move_copy_higher_priority(&nm, &tmp_nm);
         }
-        /* Rows */
+        /* Columns */
         for (x = 0; x <= (gs.maxx - gs.minx); x++) {
                 num_x = 0;
                 num_o = 0;
@@ -515,12 +515,19 @@ int computer_play(int x, int y, NEXT_MOVE *nm, NEXT_MOVE *tmp_nm) {
         if (difficulty > 1) {
                 if ((tmp_nm->stone == CROSS) && (tmp_nm->stone_cnt_together == 3) && (tmp_nm->empty_cnt >= 2))
                                 tmp_nm->priority = 100;
+                if ((tmp_nm->stone == CROSS) && (tmp_nm->stone_cnt >= 3) && (tmp_nm->empty_cnt >= 3))
+                                tmp_nm->priority = 100;
+                                
                 if ((tmp_nm->stone == CIRCLE) && (tmp_nm->stone_cnt_together == 3) && (tmp_nm->empty_cnt >= 2))
                                 tmp_nm->priority = 101;
+                if ((tmp_nm->stone == CIRCLE) && (tmp_nm->stone_cnt >= 3) && (tmp_nm->empty_cnt >= 3))
+                                tmp_nm->priority = 101;
+                
                 if ((tmp_nm->stone == CROSS) && (tmp_nm->stone_cnt_together == 4) && (tmp_nm->empty_cnt >= 1))
                                 tmp_nm->priority = 102;
                 if ((tmp_nm->stone == CIRCLE) && (tmp_nm->stone_cnt_together == 4) && (tmp_nm->empty_cnt >= 1))
                                 tmp_nm->priority = 103;
+                                
                 if (tmp_nm->priority > 99)
                         move_copy_higher_priority(nm, tmp_nm);
         }
