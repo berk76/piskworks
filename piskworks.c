@@ -24,12 +24,12 @@
 extern long heap(60000);
 #endif
 
-#define VERSION "0.3.5"
+#define VERSION "0.3.6"
 #define GRID_OFFSET 2
 #define GRID_ALLOC_BLOCK 100;
 #define FREE_DOUBLE_ALLOC_BLOCK 20
 
-#define random_condition() (rand() % 2)
+#define get_random_priority() (rand() % 10)
  
 
 typedef enum {UNKNOWN, EMPTY, CROSS, CIRCLE} STONE; 
@@ -52,6 +52,7 @@ typedef struct {
         STONE first;
         STONE last;
         int priority;
+        int random_priority;
         int empty_cnt;
         int stone_cnt;
         int stone_cnt_together;
@@ -544,9 +545,11 @@ int computer_play(int x, int y, NEXT_MOVE *nm, NEXT_MOVE *tmp_nm) {
 void move_copy_higher_priority(NEXT_MOVE *dest, NEXT_MOVE *src) {
         if ((src->stone == CIRCLE) && (src->priority < 99))
                 src->priority +=2;
+                
+        src->random_priority = get_random_priority();
                                         
         if ((src->stone != UNKNOWN) &&
-                ((src->priority > dest->priority) || ((src->priority == dest->priority) && random_condition())) && 
+                ((src->priority > dest->priority) || ((src->priority == dest->priority) && (src->random_priority > dest->random_priority))) && 
                 !((src->move_x == 0) && (src->move_y == 0)))
                         move_copy(dest, src);
                                 
@@ -558,6 +561,7 @@ void move_copy(NEXT_MOVE *dest, NEXT_MOVE *src) {
         dest->first = src->first;
         dest->last = src->last;
         dest->priority = src->priority;
+        dest->random_priority = src->random_priority;
         dest->empty_cnt = src->empty_cnt;
         dest->stone_cnt = src->stone_cnt;
         dest->stone_cnt_together = src->stone_cnt_together;
@@ -571,6 +575,7 @@ void move_empty(NEXT_MOVE *m) {
         m->first = UNKNOWN;
         m->last = UNKNOWN;
         m->priority = 0;
+        m->random_priority = 0;
         m->empty_cnt = 0;
         m->stone_cnt = 0;
         m->stone_cnt_together = 0;
@@ -586,11 +591,16 @@ void add_free_double(int x, int y, STONE stone, NEXT_MOVE *nm) {
         for(i = 0; i <= free_double_last_used; i++) {
                 if ((p[i].x == x) && (p[i].y == y) && (p[i].stone == stone)) {
                         p[i].count += 1;
-                        if (nm->priority < 50) {
+                        if ((p[i].stone == CIRCLE) && (nm->priority < 50)) {
                                 move_empty(nm);
                                 nm->move_x = p[i].x;
                                 nm->move_y = p[i].y;
-                                nm->priority = (p[i].stone == CIRCLE) ? 50 : 49;
+                                nm->priority = 50;
+                        } else if ((p[i].stone == CROSS) && (nm->priority < 49)) {
+                                move_empty(nm);
+                                nm->move_x = p[i].x;
+                                nm->move_y = p[i].y;
+                                nm->priority = 49;
                         }
                         return;
                 }
