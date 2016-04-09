@@ -68,6 +68,7 @@ typedef struct {
         STONE stone;
 } FREE_DOUBLE;
 
+
 /* grid */
 static FIELD *grid;
 static int grid_size;
@@ -83,11 +84,6 @@ static char circle_char;
 static int computer_starts_game;
 static int score_computer, score_player;
 static int difficulty;
-
-#ifdef DEBUG
-static FILE *fout;
-#define FOUT "moves.out"
-#endif
 
 
 static void setup_preferences();
@@ -111,10 +107,6 @@ static void deallocate_free_double();
 
 int main(int argc, char **argv) {
         int result, c;
-        
-        #ifdef DEBUG
-        fout = fopen(FOUT, "w");
-        #endif
         
         /* For Z88DK compiler */
         #ifdef SCCZ80
@@ -169,10 +161,6 @@ int main(int argc, char **argv) {
                 } while (result == 0);
                 
                 printf("GAME OVER!\n");
-                #ifdef DEBUG
-                fprintf(fout, "GAME OVER!\n");
-                fflush(fout);
-                #endif
                 if (result == 1) {
                         score_computer++;
                         printf("Computer is winner\n");
@@ -185,10 +173,6 @@ int main(int argc, char **argv) {
                 printf("Computer:You  %d:%d\n", score_computer, score_player);
                 c = get_option("\nAnother game? (y/n)", "YyNn");        
         } while (tolower(c) == 'y');
-        
-        #ifdef DEBUG
-        fclose(fout);
-        #endif
         
         deallocate_grid();
         deallocate_free_double();
@@ -269,11 +253,6 @@ void get_input() {
         grid[grid_last_used].x = gs.minx + (x - 'A');
         grid[grid_last_used].y = gs.miny + y - 1;
         grid[grid_last_used].s = CROSS;
-        
-        #ifdef DEBUG
-        fprintf(fout, "%c%d\n", x, y);
-        fflush(fout);
-        #endif
 }
 
 int check_and_play(int play) {
