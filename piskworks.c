@@ -18,27 +18,12 @@
 #include <string.h>
 #include <time.h>
 
-/* For Z88DK compiler */
-#ifdef SCCZ80
-#include <malloc.h>
-extern long heap(60000);
-#endif
-
-#define VERSION "0.3.6"
+#define VERSION "0.4.0"
 #define GRID_OFFSET 2
-#define GRID_ALLOC_BLOCK 100;
-#define FREE_DOUBLE_ALLOC_BLOCK 20
-
 #define get_random_priority() (rand() % 10)
  
 
-typedef enum {UNKNOWN, EMPTY, CROSS, CIRCLE} STONE; 
-
-typedef struct {
-        int x;
-        int y;
-        STONE s;
-} FIELD;
+typedef enum {UNKNOWN, NA, EMPTY, CROSS, CIRCLE} STONE; 
 
 typedef struct {
         int minx;
@@ -70,13 +55,17 @@ typedef struct {
 
 
 /* grid */
-static FIELD *grid;
-static int grid_size;
-static int grid_last_used;
+#define grid_size_x 40
+#define grid_size_y 40
+static STONE grid[grid_size_x * grid_size_y];
+static GRID_SIZE gs;
+static int move_cnt;
+static int last_move_x;
+static int last_move_y;
 
 /* free double vector */
-static FREE_DOUBLE *free_double;
-static int free_double_size;
+#define free_double_size 50
+static FREE_DOUBLE free_double[free_double_size];
 static int free_double_last_used;
 
 static char cross_char;
@@ -97,12 +86,9 @@ static void move_copy(NEXT_MOVE *dest, NEXT_MOVE *src);
 static void move_empty(NEXT_MOVE *m);
 static void add_free_double(int x, int y, STONE stone, NEXT_MOVE *nm);
 static void print_grid();
-static void get_grid_size(GRID_SIZE *gs);
 static STONE get_stone(int x, int y);
-static void allocate_grid();
-static void deallocate_grid();
-static void allocate_free_double();
-static void deallocate_free_double();
+static void put_stone(int x, int y, STONE s);
+static void clear_grid();
 
 
 int main(int argc, char **argv) {
@@ -110,11 +96,8 @@ int main(int argc, char **argv) {
         
         /* For Z88DK compiler */
         #ifdef SCCZ80
-        mallinit();              /* heap cleared to empty */
-        sbrk(30000,2000);        /* add 2000 bytes from addresses 30000-31999 inclusive to the heap */
-        sbrk(65000,536);         /* add 536 bytes from addresses 65000-65535 inclusive to the heap  */
-        printf("%c",12);         /* cls */
         printf("%c%c", 1, 32);   /* 32 characters */
+        printf("%c",12);         /* cls */
         #endif
         
         srand(time(NULL) % 37);
@@ -123,28 +106,18 @@ int main(int argc, char **argv) {
         score_player = 0;
         
         printf("Piskworks %s\n", VERSION);
-        grid_size = 0;
-        allocate_grid();
-        free_double_size = 0;
-        allocate_free_double();
-        
         do {
-                setup_preferences();    
-                
-                grid_last_used = -1;
+                setup_preferences();
+                    
+                clear_grid();
                 if (computer_starts_game) {
-                        grid_last_used++;
-                        grid[grid_last_used].x = 0;
-                        grid[grid_last_used].y = 0;
-                        grid[grid_last_used].s = CIRCLE;
+                        put_stone(0, 0, CIRCLE);
                 }
+                
                 print_grid();
                 result = 0;
                 
-                do {
-                        if (grid_size <= grid_last_used + 2)
-                                allocate_grid();
-                                 
+                do {             
                         get_input();
                         print_grid();
                         result = check_and_play(0);
@@ -174,8 +147,6 @@ int main(int argc, char **argv) {
                 c = get_option("\nAnother game? (y/n)", "YyNn");        
         } while (tolower(c) == 'y');
         
-        deallocate_grid();
-        deallocate_free_double();
         return 0;
 }
 
@@ -219,10 +190,7 @@ void get_input() {
         char line[LINELEN];
         int y, is_input_correct;
         char x;
-        GRID_SIZE gs;
         STONE s;
-
-        get_grid_size(&gs);
 
         do {
                 is_input_correct = 0;                
@@ -249,20 +217,15 @@ void get_input() {
                 is_input_correct = 1;
         } while (is_input_correct == 0);
         
-        grid_last_used++;
-        grid[grid_last_used].x = gs.minx + (x - 'A');
-        grid[grid_last_used].y = gs.miny + y - 1;
-        grid[grid_last_used].s = CROSS;
+        put_stone(gs.minx + (x - 'A'), gs.miny + y - 1, CROSS);
 }
 
 int check_and_play(int play) {
         int i, x, y, xx, yy;
         int num_x, num_o;
-        GRID_SIZE gs;
         int result;
         NEXT_MOVE nm, tmp_nm;
         
-        get_grid_size(&gs);
         move_empty(&nm);
         free_double_last_used = -1;
         
@@ -364,10 +327,7 @@ int check_and_play(int play) {
 
         /* do computer move */
         if (play) {
-                grid_last_used++;
-                grid[grid_last_used].x = nm.move_x;
-                grid[grid_last_used].y = nm.move_y;
-                grid[grid_last_used].s = CIRCLE;
+                put_stone(nm.move_x, nm.move_y, CIRCLE);
                 #ifdef DEBUG
                 printf("Priority: %d Count together: %d\n", nm.priority, nm.stone_cnt_together);
                 #endif
@@ -407,6 +367,9 @@ int computer_play(int x, int y, NEXT_MOVE *nm, NEXT_MOVE *tmp_nm) {
         NEXT_MOVE tmp;
         
         stone = get_stone(x, y);
+        if (stone == NA) {
+                move_copy_higher_priority(nm, tmp_nm);
+        } else
         if (stone == EMPTY) {                             
                 if (tmp_nm->last == EMPTY) {
                         move_copy_higher_priority(nm, tmp_nm);
@@ -439,7 +402,7 @@ int computer_play(int x, int y, NEXT_MOVE *nm, NEXT_MOVE *tmp_nm) {
                 }
                 
                 tmp_nm->last = EMPTY;
-        }
+        } else
         if (stone == CIRCLE) {                                                
                 if (tmp_nm->stone == CROSS) {
                         tmp.last = tmp_nm->last;
@@ -467,7 +430,7 @@ int computer_play(int x, int y, NEXT_MOVE *nm, NEXT_MOVE *tmp_nm) {
                         tmp_nm->stone_cnt_together = 1;
                 }
                 tmp_nm->last = CIRCLE;                
-        }
+        } else
         if (stone == CROSS) {
                 if (tmp_nm->stone == CIRCLE) {
                         tmp.last = tmp_nm->last;
@@ -586,13 +549,12 @@ void add_free_double(int x, int y, STONE stone, NEXT_MOVE *nm) {
         }
         
         free_double_last_used++;
-        if (free_double_last_used >= free_double_size) {
-                allocate_free_double();
+        if (free_double_last_used < free_double_size) {
+                p[free_double_last_used].x = x;
+                p[free_double_last_used].y = y;
+                p[free_double_last_used].count = 1;
+                p[free_double_last_used].stone = stone;
         }
-        p[free_double_last_used].x = x;
-        p[free_double_last_used].y = y;
-        p[free_double_last_used].count = 1;
-        p[free_double_last_used].stone = stone;
         
         return;
 }
@@ -600,10 +562,8 @@ void add_free_double(int x, int y, STONE stone, NEXT_MOVE *nm) {
 void print_grid() {
         int x, y;
         STONE stone;
-        GRID_SIZE gs;
         
-        get_grid_size(&gs);
-        printf("\nMove #%d\n\n", grid_last_used + 1);
+        printf("\nMove #%d\n\n", move_cnt);
         printf("  ");
         #ifndef SCCZ80 
         putchar(' '); 
@@ -631,19 +591,23 @@ void print_grid() {
                                 putchar('.');
                         } else
                         if (stone == CIRCLE) {
-                                if ((grid[grid_last_used].x == (x + gs.minx)) && (grid[grid_last_used].y == (y + gs.miny))) {
+                                if ((last_move_x == (x + gs.minx)) && (last_move_y == (y + gs.miny))) {
                                         putchar(toupper(circle_char));
                                 } else {
                                         putchar(circle_char);
                                 }
                         } else
                         if (stone == CROSS) {
-                                if ((grid[grid_last_used].x == (x + gs.minx)) && (grid[grid_last_used].y == (y + gs.miny))) {
+                                if ((last_move_x == (x + gs.minx)) && (last_move_y == (y + gs.miny))) {
                                         putchar(toupper(cross_char));
                                 } else {
                                         putchar(cross_char);
                                 }
+                        } else 
+                        if (stone == NA) {
+                                putchar(' ');
                         }
+                        
                         #ifndef SCCZ80 
                         putchar(' '); 
                         #endif                        
@@ -653,80 +617,53 @@ void print_grid() {
         putchar('\n');
 }
 
-void get_grid_size(GRID_SIZE *gs) {
-        int i;
-        
-        gs->minx = 0;
-        gs->maxx = 0;
-        gs->miny = 0;
-        gs->maxy = 0;
-                
-        for (i = 0; i <= grid_last_used; i++) {
-                if (gs->minx > grid[i].x)
-                        gs->minx = grid[i].x; 
-                if (gs->miny > grid[i].y)
-                        gs->miny = grid[i].y;
-                if (gs->maxx < grid[i].x)
-                        gs->maxx = grid[i].x;
-                if (gs->maxy < grid[i].y)
-                        gs->maxy = grid[i].y;
-        }
-        
-        gs->minx -= GRID_OFFSET;
-        gs->maxx += GRID_OFFSET;
-        gs->miny -= GRID_OFFSET;
-        gs->maxy += GRID_OFFSET;
-}
-
 STONE get_stone(int x, int y) {
+        x += grid_size_x / 2;
+        y += grid_size_y / 2;
+        
+        if ((x < 0) || (x >= grid_size_x) || (y < 0) || (y >= grid_size_y))
+                return NA;
+        
+        return grid[(y * grid_size_x) + x];
+}
+
+void put_stone(int x, int y, STONE s) {
+        last_move_x = x;
+        last_move_y = y;
+        
+        move_cnt++;
+        
+        if ((x - GRID_OFFSET) < gs.minx)
+                gs.minx = x - GRID_OFFSET;
+                 
+        if ((x + GRID_OFFSET) > gs.maxx)
+                gs.maxx = x + GRID_OFFSET;
+                 
+        if ((y - GRID_OFFSET) < gs.miny)
+                gs.miny = y - GRID_OFFSET;
+                 
+        if ((y + GRID_OFFSET) > gs.maxy)
+                gs.maxy = y + GRID_OFFSET;
+                
+        x += grid_size_x / 2;
+        y += grid_size_y / 2;
+        grid[(y * grid_size_x) + x] = s;
+}
+
+void clear_grid() {
         int i;
         
-        for (i = 0; i <= grid_last_used; i++) {
-                if ((grid[i].x == x) && (grid[i].y == y)) {
-                        return grid[i].s;
-                }
-        }       
-        return EMPTY;
-}
-
-void allocate_grid() {
-        if (grid_size == 0) {
-                grid_size = GRID_ALLOC_BLOCK;
-                grid = (FIELD *) malloc (sizeof(FIELD) * grid_size);  
-        } else {
-                grid_size += GRID_ALLOC_BLOCK;
-                grid = (FIELD *) realloc (grid, sizeof(FIELD) * grid_size);
-        }
+        last_move_x = -1;
+        last_move_y = -1;
         
-        if (grid == NULL) {
-                printf("Out of memory\n");
-                exit(1);
+        for (i = 0; i < grid_size_x * grid_size_y; i++) {
+                grid[i] = EMPTY;
         }
-}
 
-void deallocate_grid() {
-        free((void *) grid);
-        grid_size = 0;
-        grid_last_used = -1;        
-}
-
-void allocate_free_double() {
-        if (free_double_size == 0) {
-                free_double_size = FREE_DOUBLE_ALLOC_BLOCK;
-                free_double = (FREE_DOUBLE *) malloc (sizeof(FREE_DOUBLE) * free_double_size);  
-        } else {
-                free_double_size += FREE_DOUBLE_ALLOC_BLOCK;
-                free_double = (FREE_DOUBLE *) realloc (free_double, sizeof(FREE_DOUBLE) * free_double_size);
-        }
-        
-        if (free_double == NULL) {
-                printf("Out of memory\n");
-                exit(1);
-        }
-}
-
-void deallocate_free_double() {
-        free((void *) free_double);
-        free_double_size = 0;
-        free_double_last_used = -1;
+        move_cnt = 0;
+                
+        gs.minx = -GRID_OFFSET;
+        gs.maxx = GRID_OFFSET;
+        gs.miny = -GRID_OFFSET;
+        gs.maxy = GRID_OFFSET; 
 }

@@ -19,6 +19,12 @@ Compilation:
 GCC:
 gcc -o piskworks piskworks.c
 
-Z88DK (http://www.z88dk.org) - target ZX Spectrum:
-zcc +zx -opiskworks -create-app piskworks.c -lndos -lmalloc
+
+Z88DK (http://www.z88dk.org): 
+
+* ZX Spectrum
+  zcc +zx -opiskworks -create-app piskworks.c -lndos
+  
+* ZX81
+  zcc +zx81 -opiskworks -create-app piskworks.c -lndos
 
