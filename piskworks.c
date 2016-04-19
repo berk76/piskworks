@@ -18,7 +18,7 @@
 #include <string.h>
 #include <time.h>
 
-#define VERSION "0.4.0"
+#define VERSION "0.4.1"
 #define GRID_OFFSET 2
 #define get_random_priority() (rand() % 10)
  
@@ -68,11 +68,12 @@ static int last_move_y;
 static FREE_DOUBLE free_double[free_double_size];
 static int free_double_last_used;
 
-static char cross_char;
-static char circle_char;
-static int computer_starts_game;
+static char cross_char = 'x';
+static char circle_char = 'o';
+static int computer_starts_game = 1;
 static int score_computer, score_player;
-static int difficulty;
+static int difficulty = 3;
+static int eagerness = 2;
 
 
 static void setup_preferences();
@@ -105,9 +106,13 @@ int main(int argc, char **argv) {
         score_computer = 0;
         score_player = 0;
         
-        printf("Piskworks %s\n", VERSION);
+        printf("*******************\n");
+        printf("* Piskworks %s *\n", VERSION);
+        printf("*******************\n\n");
         do {
                 setup_preferences();
+                eagerness = (rand() % 5) - 2;
+                printf("eagerness=%d", eagerness);
                     
                 clear_grid();
                 if (computer_starts_game) {
@@ -153,23 +158,35 @@ int main(int argc, char **argv) {
 void setup_preferences() {
         int c;
                 
-        c = get_option("Do you want to play with X or O?", "XxOo");
-        if (tolower(c) == 'x') {
-                cross_char = 'x';
-                circle_char = 'o';
-        } else {
-                cross_char = 'o';
-                circle_char = 'x';
-        }
+        printf("Preferences:\n\n");
+        printf("* your stones ... %c\n", toupper(cross_char));
+        printf("* difficulty  ... %d\n", difficulty);
+        printf("* %s will put first move\n", (computer_starts_game) ? "computer" : "you");
         
-        c = get_option("Which difficulty (1,2,3)?", "123");
-        difficulty = c - '1' + 1;
+        c = get_option("\n(C)hange preferences,(S)tart", "CcSs");
         
-        c = get_option("Do you want to put first move (y/n)?", "YyNn");
-        if (tolower(c) == 'y') {
-                computer_starts_game = 0;
-        } else {
-                computer_starts_game = 1;
+        if (tolower(c) == 'c') {
+                
+                c = get_option("Do you want to play with X or O?", "XxOo");
+                if (tolower(c) == 'x') {
+                        cross_char = 'x';
+                        circle_char = 'o';
+                } else {
+                        cross_char = 'o';
+                        circle_char = 'x';
+                }
+                
+                c = get_option("Which difficulty (1,2,3)?", "123");
+                difficulty = c - '1' + 1;
+                
+                c = get_option("Do you want to put first move (y/n)?", "YyNn");
+                if (tolower(c) == 'y') {
+                        computer_starts_game = 0;
+                } else {
+                        computer_starts_game = 1;
+                }
+                
+                setup_preferences();
         }
 }
 
@@ -486,7 +503,7 @@ int computer_play(int x, int y, NEXT_MOVE *nm, NEXT_MOVE *tmp_nm) {
 
 void move_copy_higher_priority(NEXT_MOVE *dest, NEXT_MOVE *src) {
         if ((src->stone == CIRCLE) && (src->priority < 99))
-                src->priority +=2;
+                src->priority += eagerness;
                 
         src->random_priority = get_random_priority();
                                         
@@ -563,7 +580,7 @@ void print_grid() {
         int x, y;
         STONE stone;
         
-        printf("\nMove #%d\n\n", move_cnt);
+        printf("\nMove %d\n\n", move_cnt);
         printf("  ");
         #ifndef SCCZ80 
         putchar(' '); 
