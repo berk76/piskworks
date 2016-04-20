@@ -479,20 +479,21 @@ int computer_play(int x, int y, NEXT_MOVE *nm, NEXT_MOVE *tmp_nm) {
         
         /* handle urgent situation */
         if (difficulty > 1) {
-                if ((tmp_nm->stone == CROSS) && (tmp_nm->stone_cnt_together == 3) && (tmp_nm->empty_cnt >= 2))
+                
+                if ((tmp_nm->stone == CROSS) && (tmp_nm->stone_cnt_together >= 2) && (tmp_nm->stone_cnt >= 3) && (tmp_nm->empty_cnt >= 3))
                                 tmp_nm->priority = 100;
-                if ((tmp_nm->stone == CROSS) && (tmp_nm->stone_cnt >= 3) && (tmp_nm->empty_cnt >= 3))
-                                tmp_nm->priority = 100;
+                if ((tmp_nm->stone == CIRCLE) && (tmp_nm->stone_cnt_together >= 2) && (tmp_nm->stone_cnt >= 3) && (tmp_nm->empty_cnt >= 3))
+                                tmp_nm->priority = 101;
                                 
+                if ((tmp_nm->stone == CROSS) && (tmp_nm->stone_cnt_together == 3) && (tmp_nm->empty_cnt >= 2))
+                                tmp_nm->priority = 102;
                 if ((tmp_nm->stone == CIRCLE) && (tmp_nm->stone_cnt_together == 3) && (tmp_nm->empty_cnt >= 2))
-                                tmp_nm->priority = 101;
-                if ((tmp_nm->stone == CIRCLE) && (tmp_nm->stone_cnt >= 3) && (tmp_nm->empty_cnt >= 3))
-                                tmp_nm->priority = 101;
+                                tmp_nm->priority = 103;
                 
                 if ((tmp_nm->stone == CROSS) && (tmp_nm->stone_cnt_together == 4) && (tmp_nm->empty_cnt >= 1))
-                                tmp_nm->priority = 102;
+                                tmp_nm->priority = 104;
                 if ((tmp_nm->stone == CIRCLE) && (tmp_nm->stone_cnt_together == 4) && (tmp_nm->empty_cnt >= 1))
-                                tmp_nm->priority = 103;
+                                tmp_nm->priority = 105;
                                 
                 if (tmp_nm->priority > 99)
                         move_copy_higher_priority(nm, tmp_nm);
