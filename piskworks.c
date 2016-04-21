@@ -18,7 +18,7 @@
 #include <string.h>
 #include <time.h>
 
-#define VERSION "0.4.1"
+#define VERSION "0.4.2"
 #define GRID_OFFSET 2
 #define get_random_priority() (rand() % 10)
  
@@ -111,8 +111,7 @@ int main(int argc, char **argv) {
         printf("*******************\n\n");
         do {
                 setup_preferences();
-                eagerness = (rand() % 5) - 2;
-                printf("eagerness=%d", eagerness);
+                eagerness = ((rand() % 3) - 1) * 2;
                     
                 clear_grid();
                 if (computer_starts_game) {
@@ -146,7 +145,7 @@ int main(int argc, char **argv) {
                         score_player++;
                         printf("You are winner\n");
                 }
-                printf("(difficulty=%d, %s started)\n", difficulty, (computer_starts_game) ? "computer" : "you");        
+                printf("(d=%d, e=%d, %s started)\n", difficulty, eagerness, (computer_starts_game) ? "computer" : "you");        
                 
                 printf("Computer:You  %d:%d\n", score_computer, score_player);
                 c = get_option("\nAnother game? (y/n)", "YyNn");        
