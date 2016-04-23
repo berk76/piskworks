@@ -76,6 +76,7 @@ static int difficulty = 3;
 static int eagerness = 2;
 
 
+static void print_dedication();
 static void setup_preferences();
 static int get_option(char *message, char *values);
 static void get_input();
@@ -107,8 +108,11 @@ int main(int argc, char **argv) {
         score_player = 0;
         
         printf("*******************\n");
-        printf("* Piskworks %s *\n", VERSION);
-        printf("*******************\n\n");
+        printf("* Piskvorky %s *\n", VERSION);
+        printf("*******************\n");
+        printf("(c)2016 berk\n\n");
+        print_dedication();
+        
         do {
                 setup_preferences();
                 eagerness = ((rand() % 3) - 1) * 2;
@@ -137,36 +141,49 @@ int main(int argc, char **argv) {
         
                 } while (result == 0);
                 
-                printf("GAME OVER!\n");
+                printf("KONEC HRY\n");
                 if (result == 1) {
                         score_computer++;
-                        printf("Computer is winner\n");
+                        printf("Vyhral pocitac\n");
                 } else {
                         score_player++;
-                        printf("You are winner\n");
-                }
-                printf("(d=%d, e=%d, %s started)\n", difficulty, eagerness, (computer_starts_game) ? "computer" : "you");        
+                        printf("Jsi vitez\n");
+                }        
                 
-                printf("Computer:You  %d:%d\n", score_computer, score_player);
-                c = get_option("\nAnother game? (y/n)", "YyNn");        
-        } while (tolower(c) == 'y');
+                printf("Pocitac:Ty  %d:%d\n", score_computer, score_player);
+                c = get_option("\nHrat znovu? (a/n)", "AaNn");        
+        } while (tolower(c) == 'a');
         
         return 0;
+}
+
+void print_dedication() {
+        printf("Toto vydani piskvorku je\n"); 
+        printf("venovano webu CS.SPECCY.CZ,\n"); 
+        printf("ktery sbira ceskoslovenske hry\n");
+        printf("pro zx81.\n\n");
+        
+        printf("Pokud vite o nejake\n");
+        printf("ceskoslovenske hre pro zx81,\n");
+        printf("kontaktujte prosim autory webu.\n\n");
+        
+        printf("Pokracujte libovolnou klavesou.\n\n");
+        getchar();
 }
 
 void setup_preferences() {
         int c;
                 
-        printf("Preferences:\n\n");
-        printf("* your stones ... %c\n", toupper(cross_char));
-        printf("* difficulty  ... %d\n", difficulty);
-        printf("* %s will put first move\n", (computer_starts_game) ? "computer" : "you");
+        printf("Nastaveni:\n\n");
+        printf("* tve kameny ... %c\n", toupper(cross_char));
+        printf("* obtiznost  ... %d\n", difficulty);
+        printf("* %s\n", (computer_starts_game) ? "pocitac zacina hru" : "ty zacinas hru");
         
-        c = get_option("\n(C)hange preferences,(S)tart", "CcSs");
+        c = get_option("\n(Z)mena nastaveni,(S)tart", "ZzSs");
         
-        if (tolower(c) == 'c') {
+        if (tolower(c) == 'z') {
                 
-                c = get_option("Do you want to play with X or O?", "XxOo");
+                c = get_option("Chces hrat X nebo O?", "XxOo");
                 if (tolower(c) == 'x') {
                         cross_char = 'x';
                         circle_char = 'o';
@@ -175,11 +192,11 @@ void setup_preferences() {
                         circle_char = 'x';
                 }
                 
-                c = get_option("Which difficulty (1,2,3)?", "123");
+                c = get_option("Zvol obtiznost (1,2,3)?", "123");
                 difficulty = c - '1' + 1;
                 
-                c = get_option("Do you want to put first move (y/n)?", "YyNn");
-                if (tolower(c) == 'y') {
+                c = get_option("Chcs zacinat hru (a/n)?", "AaNn");
+                if (tolower(c) == 'a') {
                         computer_starts_game = 0;
                 } else {
                         computer_starts_game = 1;
@@ -210,7 +227,7 @@ void get_input() {
 
         do {
                 is_input_correct = 0;                
-                printf("Put your move. (for ex. B3)\n");
+                printf("Zadej svuj tah. (napr. B3)\n");
                 fgets(line, LINELEN - 1, stdin);
                
                 if (strlen(line) < 2)
@@ -226,7 +243,7 @@ void get_input() {
                         
                 s = get_stone(gs.minx + (x - 'A'), gs.miny + y - 1);
                 if (s != EMPTY) {
-                        printf("This field is already occupied\n");
+                        printf("Toto pole je uz obsazene\n");
                         continue;
                 }  
                 
@@ -580,7 +597,7 @@ void print_grid() {
         int x, y;
         STONE stone;
         
-        printf("\nMove %d\n\n", move_cnt);
+        printf("\nTah %d\n\n", move_cnt);
         printf("  ");
         #ifndef SCCZ80 
         putchar(' '); 
