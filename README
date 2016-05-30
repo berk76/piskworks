@@ -16,15 +16,18 @@ Piskworks is a simple desk game known as gomoku
 Compilation:
 ------------
 
-GCC:
-gcc -o piskworks piskworks.c
+Console (ANSI C):
+make -f Makefile.gcc pisk_con 
+
+Windows (WIN32):
+make -f Makefile.gcc pisk_w32 
 
 
 Z88DK (http://www.z88dk.org): 
 
 * ZX Spectrum
-  zcc +zx -opiskworks -create-app piskworks.c -lndos
+  make -f Makefile.z88dk pisk_zx
   
 * ZX81
-  zcc +zx81 -opiskworks -create-app piskworks.c -lndos
+  make -f Makefile.z88dk pisk_81
 
