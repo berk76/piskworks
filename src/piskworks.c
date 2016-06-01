@@ -38,9 +38,6 @@ void p_create_new_game(PISKWORKS_T *p) {
         p->computer_starts_game = 1;
         p->difficulty = 3;
         p->eagerness = ((rand() % 3) - 1) * 2;
-        p->score_computer = 0;
-        p->score_player = 0;
-        
         clear_grid(p);
         if (p->computer_starts_game) {
                 put_stone(p, 0, 0, CIRCLE);

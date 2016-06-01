@@ -117,7 +117,7 @@ BOOL InitApp() {
 
         
         hPen = CreatePen(PS_SOLID | PS_INSIDEFRAME, 2, 0x000000);
-        hPenGrid = CreatePen(PS_SOLID | PS_INSIDEFRAME, 2, 0xFFFF00);
+        hPenGrid = CreatePen(PS_SOLID | PS_INSIDEFRAME, 2, 0xEEEEAF); 
         hBrush = CreateSolidBrush(0xFFFFFF);
         hBrushHighlited = CreateSolidBrush(0x00FFFF);
         hBrushDisabled = CreateSolidBrush(0x808080);
@@ -328,6 +328,6 @@ void draw_stone(HDC hdc, int x, int y, STONE stone, int last) {
 }
 
 void update_statusbar() {
-        _stprintf(_StatusText, "Move: %d", pisk.move_cnt);
+        _stprintf(_StatusText, "Computer:You %d:%d, Move: %d", pisk.score_computer, pisk.score_player, pisk.move_cnt);
         SetWindowText(g_hwndStatusBar, _StatusText);
 }
