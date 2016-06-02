@@ -54,7 +54,7 @@ typedef struct {
 } FREE_DOUBLE;
 
 typedef struct {
-        STONE grid[grid_size_x * grid_size_y];
+        int grid[grid_size_x * grid_size_y];
         GRID_SIZE gs;
         int move_cnt;
         int last_move_x;

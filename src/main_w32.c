@@ -38,16 +38,19 @@ HPEN hPenGrid;
 HBRUSH hBrush;
 HBRUSH hBrushHighlited;
 HBRUSH hBrushDisabled;
+int g_ComputerPlaysWithO = 1;
 
 
 static BOOL InitApp();
 static BOOL DeleteApp();
 static LRESULT CALLBACK WindowProcMain(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+static BOOL CALLBACK SettingsDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 static void OnWM_MOUSEDOWN(WPARAM wParam, LPARAM lParam);
 static void onPaint();
 static void draw_mesh(HDC hdc, PISKWORKS_T *game);
 static void draw_stone(HDC hdc, int x, int y, STONE stone, int last);
 static void update_statusbar();
+static void new_game(int reset_counter);
 
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nShow) {
@@ -88,16 +91,16 @@ BOOL InitApp() {
                 return FALSE;
         }
         
-        g_hwndMain = CreateWindowEx(0, // rozšíøený styl okna    
-                _MainClassName, // jméno tøídy
-                _AppName, // text okna
-                WS_OVERLAPPEDWINDOW | WS_VISIBLE, // styl okna
-                CW_USEDEFAULT, CW_USEDEFAULT, // souøadnice na obraziovce
-                600, 600, // rozmìry - šíøka a výška
-                (HWND)NULL, // okna pøedka
-                LoadMenu(g_hInstance, MAKEINTRESOURCE(IDR_MAINMENU)), // handle hlavní nabídky
-                g_hInstance, // handle instance
-                NULL); // další "uživatelská" data
+        g_hwndMain = CreateWindowEx(0,     
+                _MainClassName, 
+                _AppName, 
+                WS_OVERLAPPEDWINDOW | WS_VISIBLE, 
+                CW_USEDEFAULT, CW_USEDEFAULT, 
+                600, 600, 
+                (HWND)NULL, 
+                LoadMenu(g_hInstance, MAKEINTRESOURCE(IDR_MAINMENU)), 
+                g_hInstance, 
+                NULL); 
                 
         if (g_hwndMain == NULL)
                 return FALSE;
@@ -112,7 +115,7 @@ BOOL InitApp() {
                 (HMENU)NULL,
                 g_hInstance,
                 NULL);
-        if ( g_hwndStatusBar == NULL )
+        if (g_hwndStatusBar == NULL)
                 return FALSE;
 
         
@@ -125,8 +128,10 @@ BOOL InitApp() {
         HFONT hFont = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
         SendMessage(g_hwndStatusBar, WM_SETFONT, (WPARAM)hFont, (LPARAM)TRUE);
         
-        p_create_new_game(&pisk);
-        update_statusbar();                
+        pisk.difficulty = 3;        
+        pisk.computer_starts_game = 1;
+        new_game(1);
+                        
         ShowWindow(g_hwndMain, SW_SHOWNORMAL);
         UpdateWindow(g_hwndMain);
                                   
@@ -146,13 +151,18 @@ BOOL DeleteApp() {
 LRESULT CALLBACK WindowProcMain(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
         
         switch (uMsg) {
-                
                 case WM_LBUTTONDOWN:
                         OnWM_MOUSEDOWN(wParam, lParam);
                         break;
-                
                 case WM_COMMAND:
                         switch (LOWORD(wParam)) {
+                                case ID_G_NEW:
+                                        new_game(1);
+                                        break;
+                                case ID_G_SETTINGS:
+                                        if (DialogBox(g_hInstance, TEXT("SETTINGBOX"), hwnd, SettingsDlgProc))
+                                                InvalidateRect(g_hwndMain, NULL, TRUE);
+                                        return 0;
                                 case ID_END:
                                         SendMessage(hwnd, WM_CLOSE, 0, 0);
                                         break;
@@ -185,10 +195,81 @@ LRESULT CALLBACK WindowProcMain(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
         return 0;
 }
 
+BOOL CALLBACK SettingsDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) {
+        static int lStone, lDifficulty, lStart;
+        
+        switch (message) {
+                
+                case WM_INITDIALOG:
+                        lStone = (g_ComputerPlaysWithO == 1) ? IDC_STONE_X: IDC_STONE_O; 
+                        CheckRadioButton(hDlg, IDC_STONE_X, IDC_STONE_O, lStone);
+                        SetFocus(GetDlgItem(hDlg, lStone));
+                        
+                        lStart = pisk.computer_starts_game;
+                        CheckDlgButton(hDlg, IDC_COMP_START, (lStart) ? BST_CHECKED : BST_UNCHECKED);
+                        
+                        lDifficulty = pisk.difficulty;
+                        switch (lDifficulty) {
+                                case 1: CheckRadioButton(hDlg, IDC_DIF_EASY, IDC_DIF_HARD, IDC_DIF_EASY);
+                                        break;
+                                case 2: CheckRadioButton(hDlg, IDC_DIF_EASY, IDC_DIF_HARD, IDC_DIF_MEDIUM);
+                                        break;
+                                case 3: CheckRadioButton(hDlg, IDC_DIF_EASY, IDC_DIF_HARD, IDC_DIF_HARD);
+                                        break;
+                        }
+                        return FALSE ;
+                case WM_COMMAND:
+                        switch (LOWORD (wParam)) {
+                                case IDC_STONE_X:
+                                case IDC_STONE_O:
+                                        CheckRadioButton(hDlg, IDC_STONE_X, IDC_STONE_O, LOWORD (wParam));
+                                        lStone = LOWORD (wParam); 
+                                        return TRUE;
+                                case IDC_COMP_START:
+                                        if (IsDlgButtonChecked(hDlg, IDC_COMP_START)) {
+                                                CheckDlgButton(hDlg, IDC_COMP_START, BST_UNCHECKED);
+                                                lStart = 0;
+                                        } else {
+                                                CheckDlgButton(hDlg, IDC_COMP_START, BST_CHECKED);
+                                                lStart = 1;
+                                        }
+                                        return TRUE;
+                                case IDC_DIF_EASY:
+                                case IDC_DIF_MEDIUM:
+                                case IDC_DIF_HARD:
+                                        CheckRadioButton(hDlg, IDC_DIF_EASY, IDC_DIF_HARD, LOWORD (wParam));
+                                        switch (LOWORD (wParam)) {
+                                                case IDC_DIF_EASY:
+                                                        lDifficulty = 1;
+                                                        break;
+                                                case IDC_DIF_MEDIUM:
+                                                        lDifficulty = 2;
+                                                        break;
+                                                case IDC_DIF_HARD:
+                                                        lDifficulty = 3;
+                                                        break;
+                                        }
+                                        return TRUE;
+                                case IDC_OK:
+                                        g_ComputerPlaysWithO = (lStone == IDC_STONE_X) ? 1 : 0;
+                                        pisk.computer_starts_game = (lStart == BST_CHECKED) ? 1 : 0;
+                                        pisk.difficulty = lDifficulty;
+                                        new_game(1);  
+                                        EndDialog(hDlg, TRUE);
+                                        return TRUE;
+                                case IDC_CANCEL:
+                                        EndDialog(hDlg, FALSE);
+                                        return TRUE;
+                        }
+                        break;
+        }
+        
+        return FALSE;
+}
+
 void OnWM_MOUSEDOWN(WPARAM wParam, LPARAM lParam) {
         int x, y;
         HDC hdc;
-        RECT rect;
         int result;
         
         x = (GET_X_LPARAM(lParam) -  MARGIN) / GRID_FIELD_SIZE;
@@ -225,10 +306,7 @@ void OnWM_MOUSEDOWN(WPARAM wParam, LPARAM lParam) {
                         pisk.score_player++;
                         MessageBox(g_hwndMain, "You are winner", "GAME OVER", MB_ICONINFORMATION);
                 }
-                p_create_new_game(&pisk);
-                update_statusbar();
-                GetClientRect(g_hwndMain, &rect);
-                InvalidateRect(g_hwndMain, &rect, TRUE);
+                new_game(0);
         }
 }
 
@@ -300,7 +378,7 @@ void draw_stone(HDC hdc, int x, int y, STONE stone, int last) {
                 SelectObject(hdc, hPen);
         }
         
-        if (stone == CIRCLE) {
+        if ((g_ComputerPlaysWithO && (stone == CIRCLE)) || (!g_ComputerPlaysWithO && (stone == CROSS))) {
                 Ellipse(hdc, 
                         x_pos - GRID_FIELD_SIZE / 2 + 2,
                         y_pos - GRID_FIELD_SIZE / 2 + 2,
@@ -308,7 +386,7 @@ void draw_stone(HDC hdc, int x, int y, STONE stone, int last) {
                         y_pos + GRID_FIELD_SIZE / 2 - 2
                 );
         } else
-        if (stone == CROSS) {
+        if ((g_ComputerPlaysWithO && (stone == CROSS)) || (!g_ComputerPlaysWithO && (stone == CIRCLE))) {
                 MoveToEx(hdc, x_pos - GRID_FIELD_SIZE / 2 + 3, y_pos - GRID_FIELD_SIZE / 2 + 3, NULL);
                 LineTo(hdc, x_pos + GRID_FIELD_SIZE / 2 - 3, y_pos + GRID_FIELD_SIZE / 2 - 3);
                 MoveToEx(hdc, x_pos + GRID_FIELD_SIZE / 2 - 3, y_pos - GRID_FIELD_SIZE / 2 + 3, NULL);
@@ -330,4 +408,14 @@ void draw_stone(HDC hdc, int x, int y, STONE stone, int last) {
 void update_statusbar() {
         _stprintf(_StatusText, "Computer:You %d:%d, Move: %d", pisk.score_computer, pisk.score_player, pisk.move_cnt);
         SetWindowText(g_hwndStatusBar, _StatusText);
+}
+
+void new_game(int reset_counter) {
+        p_create_new_game(&pisk);
+        if (reset_counter) {
+                pisk.score_player = 0;
+                pisk.score_computer = 0;
+        }
+        update_statusbar();
+        InvalidateRect(g_hwndMain, NULL, TRUE);
 }

@@ -35,8 +35,6 @@ void p_create_new_game(PISKWORKS_T *p) {
                 return;
         
         srand(time(NULL) % 37);
-        p->computer_starts_game = 1;
-        p->difficulty = 3;
         p->eagerness = ((rand() % 3) - 1) * 2;
         clear_grid(p);
         if (p->computer_starts_game) {
