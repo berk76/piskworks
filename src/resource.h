@@ -20,3 +20,13 @@
 #define ID_G_SETTINGS   9002
 #define ID_END          9003
 #define ID_ABOUT        9004
+
+#define IDC_STONE_X     1001
+#define IDC_STONE_O     1002
+#define IDC_COMP_START  1003
+#define IDC_DIF_EASY    1004
+#define IDC_DIF_MEDIUM  1005
+#define IDC_DIF_HARD    1006
+#define IDC_OK          1007
+#define IDC_CANCEL      1008
+#define IDC_STATIC      -1

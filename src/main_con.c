@@ -46,6 +46,8 @@ int main(int argc, char **argv) {
         printf("*******************\n\n");
         do {
                 p_create_new_game(&pisk);
+                pisk.difficulty = 3;
+                pisk.computer_starts_game = 1;
                 setup_preferences();
 
                 print_grid();
