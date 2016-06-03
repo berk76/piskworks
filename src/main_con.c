@@ -45,10 +45,10 @@ int main(int argc, char **argv) {
         printf("* Piskworks %s *\n", VERSION);
         printf("*******************\n\n");
         do {
-                p_create_new_game(&pisk);
                 pisk.difficulty = 3;
                 pisk.computer_starts_game = 1;
                 setup_preferences();
+                p_create_new_game(&pisk);
 
                 print_grid();
                 result = 0;
