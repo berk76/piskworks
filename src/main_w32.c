@@ -272,8 +272,18 @@ void OnWM_MOUSEDOWN(WPARAM wParam, LPARAM lParam) {
         HDC hdc;
         int result;
         
+        if ((GET_X_LPARAM(lParam) < MARGIN) || (GET_Y_LPARAM(lParam) < MARGIN)) {
+                return;
+        } 
+        
         x = (GET_X_LPARAM(lParam) -  MARGIN) / GRID_FIELD_SIZE;
         y = (GET_Y_LPARAM(lParam) -  MARGIN) / GRID_FIELD_SIZE;
+        
+        if ((x > (pisk.gs.maxx - pisk.gs.minx)) || 
+            (y > (pisk.gs.maxy - pisk.gs.miny))) {
+                return;    
+        }
+        
         if (get_input(&pisk, x, y)) {
                 SetWindowText(g_hwndStatusBar, "This field is already occupied");
                 return;
