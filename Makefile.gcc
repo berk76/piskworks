@@ -18,7 +18,7 @@ CFLAGS = -O2 -Wall -c -o $@
 all: pisk_w32 pisk_con
 
 pisk_w32: src/main_w32.o src/piskworks.o src/resource.res 
-	$(CC) -Wall -o $@ src/main_w32.o src/piskworks.o src/resource.res -lgdi32 -mwindows
+	$(CC) -Wall -o $@ src/main_w32.o src/piskworks.o src/resource.res -lgdi32 -lcomctl32 -mwindows
         
 pisk_con: src/main_con.o src/piskworks.o  
 	$(CC) -Wall -o $@ src/main_con.o src/piskworks.o
