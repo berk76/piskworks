@@ -14,6 +14,7 @@
 
 #include <windows.h>
 #include <Windowsx.h>
+#include <CommCtrl.h>
 #include <tchar.h>
 #include <stdio.h>
 #include <math.h>
@@ -55,7 +56,8 @@ static void new_game(int reset_counter);
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nShow) {
         g_hInstance = hInstance;
-        
+
+        InitCommonControls();        
         if (!InitApp())
                 return FALSE;
                 
@@ -107,7 +109,7 @@ BOOL InitApp() {
                 
                 
         g_hwndStatusBar = CreateWindowEx(0,
-                TEXT("msctls_statusbar32"),
+                STATUSCLASSNAME,
                 TEXT(" "),
                 WS_CHILD | WS_VISIBLE,
                 0, 0, 0, 0,
