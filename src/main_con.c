@@ -18,7 +18,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include "piskworks.h"
+#include "pisk_lib.h"
 
 
 static PISKWORKS_T pisk;
@@ -32,7 +32,7 @@ static void get_input_con();
 static void print_grid();
 
 
-int main(int argc, char **argv) {
+int main(void) {
         int result, c;
         
         /* For Z88DK compiler */
@@ -41,7 +41,7 @@ int main(int argc, char **argv) {
         printf("%c",12);         /* cls */
         #endif
         
-        printf("*******************\n");
+        printf("\n*******************\n");
         printf("* Piskworks %s *\n", VERSION);
         printf("*******************\n\n");
         do {
@@ -134,7 +134,7 @@ int get_option(char *message, char *values) {
 }
 
 void get_input_con() {
-        #define LINELEN 256
+        #define LINELEN 10
         char line[LINELEN];
         int y, is_input_correct;
         char x;

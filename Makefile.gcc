@@ -11,23 +11,23 @@
 #       Written by Jaroslav Beran <jaroslav.beran@gmail.com>, on 24.2.2016
 
 
-CC = gcc
+CC = cc
 CFLAGS = -O2 -Wall -c -o $@
 
 
 all: pisk_w32 pisk_con
 
-pisk_w32: src/main_w32.o src/piskworks.o src/resource.res 
-	$(CC) -Wall -o $@ src/main_w32.o src/piskworks.o src/resource.res -lgdi32 -lcomctl32 -mwindows
+pisk_w32: src/main_w32.o src/pisk_lib.o src/resource.res 
+	$(CC) -Wall -o $@ src/main_w32.o src/pisk_lib.o src/resource.res -lgdi32 -lcomctl32 -mwindows
         
-pisk_con: src/main_con.o src/piskworks.o  
-	$(CC) -Wall -o $@ src/main_con.o src/piskworks.o
+pisk_con: src/main_con.o src/pisk_lib.o  
+	$(CC) -Wall -o $@ src/main_con.o src/pisk_lib.o
 
-src/main_w32.o: src/main_w32.c src/piskworks.h src/resource.h
+src/main_w32.o: src/main_w32.c src/pisk_lib.h src/resource.h
 
-src/main_con.o: src/main_con.c src/piskworks.h
+src/main_con.o: src/main_con.c src/pisk_lib.h
 
-src/piskworks.o: src/piskworks.c src/piskworks.h
+src/pisk_lib.o: src/pisk_lib.c src/pisk_lib.h
 
 src/resource.res: src/resource.rc src/resource.h
 	windres src/resource.rc -O coff -o src/resource.res

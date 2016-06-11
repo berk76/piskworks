@@ -1,0 +1,40 @@
+#       Makefile.tc
+#       Turbo C 2.01
+#
+#       To use, do "make -fmakefile.tc"
+#       To compile in small model, set below: MODEL=s
+#       
+#       This file is part of Piskworks game.
+#       https://bitbucket.org/berk76/piskworks
+#       
+#       Piskworks is free software; you can redistribute it and/or modify
+#       it under the terms of the GNU General Public License as published by
+#       the Free Software Foundation; either version 3 of the License, or
+#       (at your option) any later version. <http://www.gnu.org/licenses/>
+#       
+#       Written by Jaroslav Beran <jaroslav.beran@gmail.com>, on 24.2.2016
+
+
+MODEL=l
+CC=tcc
+LD=tcc
+AR=tlib
+CFLAGS=-O2 -G -Z -m$(MODEL)
+LDFLAGS=-m$(MODEL) -f-
+
+
+all: pisk_con.exe
+
+.c.obj:
+	$(CC) -c $(CFLAGS) $*.c
+
+main_con.obj: main_con.c pisk_lib.h
+
+pisk_lib.obj: pisk_lib.c pisk_lib.h
+
+pisk_con.exe: main_con.obj pisk_lib.obj  
+	$(LD) $(LDFLAGS) main_con.obj pisk_lib.obj
+
+clean:
+	-del *.obj
+	-del *.exe 

@@ -1,5 +1,5 @@
 /*
-*       piskworks.h
+*       pisk_lib.h
 *       
 *       This file is part of Piskworks game.
 *       https://bitbucket.org/berk76/piskworks
@@ -13,8 +13,8 @@
 */
 
 
-#ifndef _PISKWORKS_
-#define _PISKWORKS_
+#ifndef _PISK_LIB_
+#define _PISK_LIB_
 
 
 #define VERSION "0.4.2"
