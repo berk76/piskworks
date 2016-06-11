@@ -14,15 +14,15 @@
 CFLAGS = +zx -c -o $@
 CC = zcc
 
-pisk_zx: src/main_con.o src/piskworks.o
-	$(CC) +zx -lndos -preserve -o$@ -create-app src/main_con.o src/piskworks.o
+pisk_zx: src/main_con.o src/pisk_lib.o
+	$(CC) +zx -lndos -preserve -o$@ -create-app src/main_con.o src/pisk_lib.o
 
-pisk_81: src/main_con.o src/piskworks.o
-	$(CC) +zx81 -lndos -preserve -o$@ -create-app src/main_con.o src/piskworks.o
+pisk_81: src/main_con.o src/pisk_lib.o
+	$(CC) +zx81 -lndos -preserve -o$@ -create-app src/main_con.o src/pisk_lib.o
 
-src/main_con.o: src/main_con.c src/piskworks.h
+src/main_con.o: src/main_con.c src/pisk_lib.h
 
-src/piskworks.o: src/piskworks.c src/piskworks.h
+src/pisk_lib.o: src/pisk_lib.c src/pisk_lib.h
 
 clean:
 	rm -f src/*.o *.tap zcc_opt.def pisk_zx.reloc pisk_zx pisk_81.reloc pisk_81.P pisk_81

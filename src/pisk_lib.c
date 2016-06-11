@@ -1,5 +1,5 @@
 /*
-*       piskworks.c
+*       pisk_lib.c
 *       
 *       This file is part of Piskworks game.
 *       https://bitbucket.org/berk76/piskworks
@@ -16,7 +16,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include "piskworks.h"
+#include "pisk_lib.h"
 
 #define get_random_priority() (rand() % 10)
 

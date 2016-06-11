@@ -18,7 +18,7 @@
 #include <tchar.h>
 #include <stdio.h>
 #include <math.h>
-#include "piskworks.h"
+#include "pisk_lib.h"
 #include "resource.h"
 
 #define _MainClassName TEXT("WinAPIMainClass")
