@@ -21,15 +21,9 @@
 #include "pisk_lib.h"
 #include "resource.h"
 
-//#define TOUCH_SUPPORT
-
 #define _MainClassName TEXT("WinAPIMainClass")
 #define MARGIN 15
-#ifdef TOUCH_SUPPORT
-#define GRID_FIELD_SIZE 40
-#else
 #define GRID_FIELD_SIZE 20
-#endif
 #define TEXT_BUFF 256
 
 TCHAR _AppName[TEXT_BUFF];
@@ -51,16 +45,13 @@ int g_ComputerPlaysWithO = 1;
 static BOOL InitApp();
 static BOOL DeleteApp();
 static LRESULT CALLBACK WindowProcMain(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-static BOOL CALLBACK SettingsDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
-static void process_move(int x, int y);
+static BOOL CALLBACK SettingsDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
+static void OnWM_MOUSEDOWN(WPARAM wParam, LPARAM lParam);
 static void onPaint();
 static void draw_mesh(HDC hdc, PISKWORKS_T *game);
 static void draw_stone(HDC hdc, int x, int y, STONE stone, int last);
 static void update_statusbar();
 static void new_game(int reset_counter);
-#ifdef TOUCH_SUPPORT
-static BOOL on_gesture(WPARAM wParam, LPARAM lParam);
-#endif
 
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nShow) {
@@ -145,23 +136,6 @@ BOOL InitApp() {
                         
         ShowWindow(g_hwndMain, SW_SHOWNORMAL);
         UpdateWindow(g_hwndMain);
-        
-        #ifdef TOUCH_SUPPORT
-        
-        // set up our want / block settings
-        DWORD dwPanWant  = GC_PAN_WITH_SINGLE_FINGER_VERTICALLY | GC_PAN_WITH_SINGLE_FINGER_HORIZONTALLY;
-        DWORD dwPanBlock = GC_PAN_WITH_GUTTER | GC_PAN_WITH_INERTIA;
-        
-        // set the settings in the gesture configuration
-        GESTURECONFIG gc[] = {{ GID_ZOOM, GC_ZOOM, 0 },
-                              { GID_ROTATE, GC_ROTATE, 0},
-                              { GID_PAN, dwPanWant , dwPanBlock}                     
-                             };    
-                             
-        UINT uiGcs = 3;
-        SetGestureConfig(g_hwndMain, 0, uiGcs, gc, sizeof(GESTURECONFIG));  
-        
-        #endif
                                   
         return TRUE;
 }
@@ -180,7 +154,7 @@ LRESULT CALLBACK WindowProcMain(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
         
         switch (uMsg) {
                 case WM_LBUTTONDOWN:
-                        process_move(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+                        OnWM_MOUSEDOWN(wParam, lParam);
                         break;
                 case WM_COMMAND:
                         switch (LOWORD(wParam)) {
@@ -215,12 +189,7 @@ LRESULT CALLBACK WindowProcMain(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
                                         return 0;
                                 }
                         DestroyWindow(hwnd);
-                        break;
-                #ifdef TOUCH_SUPPORT
-                case WM_GESTURE:
-                        if (on_gesture(wParam, lParam))
-                                break;  
-                #endif        
+                        break;        
                 default:
                         return DefWindowProc(hwnd, uMsg, wParam, lParam);
         }
@@ -300,16 +269,17 @@ BOOL CALLBACK SettingsDlgProc (HWND hDlg, UINT message, WPARAM wParam, LPARAM lP
         return FALSE;
 }
 
-void process_move(int x, int y) {
+void OnWM_MOUSEDOWN(WPARAM wParam, LPARAM lParam) {
+        int x, y;
         HDC hdc;
         int result;
         
-        if ((x < MARGIN) || (y < MARGIN)) {
+        if ((GET_X_LPARAM(lParam) < MARGIN) || (GET_Y_LPARAM(lParam) < MARGIN)) {
                 return;
         } 
         
-        x = (x -  MARGIN) / GRID_FIELD_SIZE;
-        y = (y -  MARGIN) / GRID_FIELD_SIZE;
+        x = (GET_X_LPARAM(lParam) -  MARGIN) / GRID_FIELD_SIZE;
+        y = (GET_Y_LPARAM(lParam) -  MARGIN) / GRID_FIELD_SIZE;
         
         if ((x > (pisk.gs.maxx - pisk.gs.minx)) || 
             (y > (pisk.gs.maxy - pisk.gs.miny))) {
@@ -461,28 +431,3 @@ void new_game(int reset_counter) {
         update_statusbar();
         InvalidateRect(g_hwndMain, NULL, TRUE);
 }
-
-#ifdef TOUCH_SUPPORT
-BOOL on_gesture(WPARAM wParam, LPARAM lParam) {
-        GESTUREINFO gi;
-        
-        ZeroMemory(&gi, sizeof(GESTUREINFO));
-        gi.cbSize = sizeof(GESTUREINFO);
-        BOOL bResult  = GetGestureInfo((HGESTUREINFO)lParam, &gi);
-        BOOL bHandled = FALSE;
-        
-        if (bResult) {
-                switch (gi.dwID){
-                        case GID_PAN:
-                                if (gi.dwFlags & GF_BEGIN) {
-                                        process_move(gi.ptsLocation.x, gi.ptsLocation.y);    
-                                } 
-                                bHandled = TRUE;
-                                break;
-                }
-                CloseGestureInfoHandle((HGESTUREINFO)lParam);          
-        }
-        
-        return bHandled; 
-}
-#endif
