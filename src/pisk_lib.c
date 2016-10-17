@@ -15,7 +15,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#ifndef NO_TIME
 #include <time.h>
+#endif
 #include "pisk_lib.h"
 
 #define get_random_priority() (rand() % 10)
@@ -33,8 +35,11 @@ static void clear_grid(PISKWORKS_T *p);
 void p_create_new_game(PISKWORKS_T *p) {
         if (p == NULL) 
                 return;
-        
+	#ifndef NO_TIME
         srand(time(NULL) % 37);
+	#else
+	srand(1000);
+	#endif
         p->eagerness = ((rand() % 3) - 1) * 2;
         clear_grid(p);
         if (p->computer_starts_game) {
