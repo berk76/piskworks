@@ -32,3 +32,11 @@ Compilation:
 * ZX81 - Z88DK (http://www.z88dk.org)
   make -f Makefile.z88dk pisk_81
 
+* APPLE 1 (replica 1)
+  cd src
+  make -f Makefile.app
+  bintomon -v -f pisk_app > pisk_app.mon
+
+  for more info about replica 1 see: 
+  http://jefftranter.blogspot.cz/2012/04/c-programming-tutorial-with-cc65-on.html
+
