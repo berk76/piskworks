@@ -26,10 +26,10 @@ static char cross_char = 'x';
 static char circle_char = 'o';
 
 
-static void setup_preferences();
+static void setup_preferences(void);
 static int get_option(char *message, char *values);
-static void get_input_con();
-static void print_grid();
+static void get_input_con(void);
+static void print_grid(void);
 
 
 int main(void) {
@@ -86,7 +86,7 @@ int main(void) {
         return 0;
 }
 
-void setup_preferences() {
+void setup_preferences(void) {
         int c;
                 
         printf("Preferences:\n\n");
@@ -133,7 +133,7 @@ int get_option(char *message, char *values) {
         return c;
 }
 
-void get_input_con() {
+void get_input_con(void) {
         #define LINELEN 10
         char line[LINELEN];
         int y, is_input_correct;
@@ -168,7 +168,7 @@ void get_input_con() {
         get_input(&pisk, (x - 'A'), y - 1);
 }
 
-void print_grid() {
+void print_grid(void) {
         int x, y;
         STONE stone;
         
