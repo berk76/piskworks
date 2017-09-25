@@ -28,3 +28,23 @@ How to build
   for more info about replica 1 see:   
   http://jefftranter.blogspot.cz/2012/04/c-programming-tutorial-with-cc65-on.html  
 
+* AS400  
+  Create your personal library if you dont have one  
+  crtlib mylib  
+  
+  Setup your private library as default library  
+  chgprf curlib(mylib)  
+  
+  Create new file QCSRC  
+  crtsrcpf mylib/qcsrc  
+  
+  Copy new member GOM (from src/qcsrc.gom) into QCSRC fiel using FTP client.  
+  
+  You can see and modify source code in SEU editor  
+  strseu srcfile(QCSRC) srcmbr(GOM) 
+  
+  Compile it using crtbndc command  
+  crtbndc pgm(GOM)  
+  
+  Finally you can run it  
+  call GOM  
