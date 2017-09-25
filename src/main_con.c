@@ -2,7 +2,7 @@
 *       main_con.c
 *       
 *       This file is part of Piskworks game.
-*       https://bitbucket.org/berk76/piskworks
+*       https://github.com/berk76/piskworks
 *       
 *       Piskworks is free software; you can redistribute it and/or modify
 *       it under the terms of the GNU General Public License as published by

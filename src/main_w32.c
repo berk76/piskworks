@@ -2,7 +2,7 @@
 *       main_w32.c
 *       
 *       This file is part of Piskworks game.
-*       https://bitbucket.org/berk76/piskworks
+*       https://github.com/berk76/piskworks
 *       
 *       Piskworks is free software; you can redistribute it and/or modify
 *       it under the terms of the GNU General Public License as published by
@@ -72,7 +72,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, in
 
 BOOL InitApp() {
         _stprintf(_AppName, "Piskworks %s", VERSION);
-        _stprintf(_AboutText, "Piskworks %s\nhttps://bitbucket.org/berk76/piskworks\n(c) 2016 Jaroslav Beran", VERSION);
+        _stprintf(_AboutText, "Piskworks %s\nhttps://github.com/berk76/piskworks\n(c) 2016 Jaroslav Beran", VERSION);
 
         WNDCLASSEX wc;
         wc.cbSize = sizeof(WNDCLASSEX);
