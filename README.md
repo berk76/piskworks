@@ -38,13 +38,13 @@ How to build
   Create new file QCSRC  
   crtsrcpf mylib/qcsrc  
   
-  Copy new member GOM (from src/qcsrc.gom) into QCSRC fiel using FTP client.  
+  Copy new member GOM (from src/qcsrc.gom) into QCSRC file using FTP client.  
   
   You can see and modify source code in SEU editor  
   strseu srcfile(QCSRC) srcmbr(GOM) 
   
-  Compile it using crtbndc command  
+  Compile program using crtbndc command  
   crtbndc pgm(GOM)  
   
-  Finally you can run it  
+  Finally you can run it...  
   call GOM  
