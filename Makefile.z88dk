@@ -25,5 +25,5 @@ src/main_con.o: src/main_con.c src/pisk_lib.h
 src/pisk_lib.o: src/pisk_lib.c src/pisk_lib.h
 
 clean:
-	rm -f src/*.o *.tap zcc_opt.def pisk_zx.reloc pisk_zx pisk_81.reloc pisk_81.P pisk_81
+	rm -f src/*.o *.tap zcc_opt.def pisk_zx.reloc pisk_zx pisk_81.reloc pisk_81.P pisk_81 zcc_proj.lst
 
