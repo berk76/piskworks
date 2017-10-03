@@ -26,6 +26,7 @@ static char cross_char = 'x';
 static char circle_char = 'o';
 
 
+static void print_char(char c, int n);
 static void setup_preferences(void);
 static int get_option(char *message, char *values);
 static void get_input_con(void);
@@ -40,10 +41,13 @@ int main(void) {
         printf("%c%c", 1, 32);   /* 32 characters */
         printf("%c",12);         /* cls */
         #endif
-        
-        printf("\n*******************\n");
+      
+	printf("\n");
+	print_char('*', 14 + strlen(VERSION));
+	printf("\n");
         printf("* Piskworks %s *\n", VERSION);
-        printf("*******************\n\n");
+	print_char('*', 14 + strlen(VERSION));
+        printf("\n\n");
         do {
                 pisk.difficulty = 3;
                 pisk.computer_starts_game = 1;
@@ -85,6 +89,14 @@ int main(void) {
         
         return 0;
 }
+
+
+void print_char(char c, int n) {
+	int i;
+	for (i = 0; i < n; i++)
+		putchar(c);
+}
+
 
 void setup_preferences(void) {
         int c;
