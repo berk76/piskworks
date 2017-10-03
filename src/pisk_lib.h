@@ -17,7 +17,7 @@
 #define _PISK_LIB_
 
 
-#define VERSION "0.4.2"
+#define VERSION "0.5.0"
 #define GRID_OFFSET 2
 #define grid_size_x 40
 #define grid_size_y 40
