@@ -42,6 +42,15 @@ Piskworks is a simple desk game known as gomoku.
   1. go into project directory `cd Piskworks`
   1. run `make -f Makefile.z88dk pisk_81`
   1. find and load pisk_81.P
+#### If you want to make autorun
+  1. load pisk_81.P in EightyOne emulator
+  1. add following lines:
+     1. `9990 SAVE "PISKWORKS"`
+     1. `9995 GOTO 0`
+  1. type and run command `RUN 9990`
+  1. open Tools/Tape Manager...
+  1. delete the first entry
+  1. push save button
 
   ![ZX81.PNG](doc/ZX81.PNG)
 
