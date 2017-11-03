@@ -20,6 +20,9 @@ pisk_zx: src/main_con.o src/pisk_lib.o
 pisk_81: src/main_con.o src/pisk_lib.o
 	$(CC) +zx81 -lndos -preserve -o$@ -create-app src/main_con.o src/pisk_lib.o
 
+pisk_80: src/main_con.o src/pisk_lib.o
+	$(CC) +zx80 -lndos -preserve -o$@ -create-app src/main_con.o src/pisk_lib.o
+
 src/main_con.o: src/main_con.c src/pisk_lib.h
 
 src/pisk_lib.o: src/pisk_lib.c src/pisk_lib.h

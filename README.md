@@ -54,6 +54,15 @@ Piskworks is a simple desk game known as gomoku.
 
   ![ZX81.PNG](doc/ZX81.PNG)
 
+
+### ZX80
+  1. download and install Z88DK c compiler from http://www.z88dk.org
+  1. download project `git clone https://github.com/berk76/piskworks Piskworks`
+  1. go into project directory `cd Piskworks`
+  1. run `make -f Makefile.z88dk pisk_80`
+  1. find and load pisk_80.O
+
+
 ### APPLE 1 (replica 1)
   1. install c compiler according to this article: http://jefftranter.blogspot.cz/2012/04/c-programming-tutorial-with-cc65-on.html
   1. download project `git clone https://github.com/berk76/piskworks Piskworks`
