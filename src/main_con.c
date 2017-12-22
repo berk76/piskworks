@@ -20,6 +20,10 @@
 #include <time.h>
 #include "pisk_lib.h"
 
+#ifdef _EINSTEIN_
+#include "res_con.h"
+#endif
+
 
 static PISKWORKS_T pisk;
 static char cross_char = 'x';
@@ -48,6 +52,11 @@ int main(void) {
         printf("* Piskworks %s *\n", VERSION);
 	print_char('*', 14 + strlen(VERSION));
         printf("\n\n");
+        
+        #ifdef _EINSTEIN_
+        printf("%s\n\n", gfx_einstein);
+        #endif
+        
         do {
                 pisk.difficulty = 3;
                 pisk.computer_starts_game = 1;

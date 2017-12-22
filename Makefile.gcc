@@ -11,8 +11,8 @@
 #       Written by Jaroslav Beran <jaroslav.beran@gmail.com>, on 24.2.2016
 
 
-CC = gcc
-CFLAGS = -O2 -Wall -c -o $@
+CC = cc
+CFLAGS = -O2 -Wall -c -o $@ -D _EINSTEIN_
 
 
 all: pisk_w32 pisk_con
@@ -25,7 +25,7 @@ pisk_con: src/main_con.o src/pisk_lib.o
 
 src/main_w32.o: src/main_w32.c src/pisk_lib.h src/resource.h
 
-src/main_con.o: src/main_con.c src/pisk_lib.h
+src/main_con.o: src/main_con.c src/pisk_lib.h src/res_con.h
 
 src/pisk_lib.o: src/pisk_lib.c src/pisk_lib.h
 
