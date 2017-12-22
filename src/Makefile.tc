@@ -19,7 +19,7 @@ MODEL=t
 CC=tcc
 LD=tcc
 AR=tlib
-CFLAGS=-O2 -G -Z -m$(MODEL)
+CFLAGS=-O2 -G -Z -m$(MODEL) -D_EINSTEIN_
 LDFLAGS=-m$(MODEL) -f-
 
 
