@@ -33,7 +33,7 @@ static char circle_char = 'o';
 static void print_char(char c, int n);
 static void setup_preferences(void);
 static int get_option(char *message, char *values);
-static void get_input_con(void);
+static int get_input_con(void); /* return value 0 = input done, 1 = quit game */
 static void print_grid(void);
 
 
@@ -67,7 +67,13 @@ int main(void) {
                 result = 0;
                 
                 do {             
-                        get_input_con();
+                        result = get_input_con();
+                        if (result == 1) {
+                                /* game is aborted */
+                                result = 3;
+                                break;
+                        }
+                                
                         print_grid();
                         result = check_and_play(&pisk, 0);
                         
@@ -82,16 +88,20 @@ int main(void) {
         
                 } while (result == 0);
                 
-                printf("GAME OVER!\n");
-                if (result == 1) {
-                        pisk.score_computer++;
-                        printf("Computer is winner\n");
-                } else {
-                        pisk.score_player++;
-                        printf("You are winner\n");
+                switch (result) {
+                        case 1: printf("GAME OVER!\n");
+                                pisk.score_computer++;
+                                printf("Computer is winner\n");
+                                printf("(d=%d, e=%d, %s started)\n", pisk.difficulty, pisk.eagerness, (pisk.computer_starts_game) ? "computer" : "you");
+                                break;
+                        case 2: printf("GAME OVER!\n");
+                                pisk.score_player++;
+                                printf("You are winner\n");
+                                printf("(d=%d, e=%d, %s started)\n", pisk.difficulty, pisk.eagerness, (pisk.computer_starts_game) ? "computer" : "you");
+                                break;
+                        case 3: printf("GAME ABORTED!\n");
                 }
-                printf("(d=%d, e=%d, %s started)\n", pisk.difficulty, pisk.eagerness, (pisk.computer_starts_game) ? "computer" : "you");        
-                
+
                 printf("Computer:You  %d:%d\n", pisk.score_computer, pisk.score_player);
                 c = get_option("\nAnother game? (y/n)", "YyNn");        
         } while (tolower(c) == 'y');
@@ -154,7 +164,7 @@ int get_option(char *message, char *values) {
         return c;
 }
 
-void get_input_con(void) {
+int get_input_con(void) {
         #define LINELEN 10
         char line[LINELEN];
         int y, is_input_correct;
@@ -163,8 +173,12 @@ void get_input_con(void) {
 
         do {
                 is_input_correct = 0;                
-                printf("Put your move. (for ex. B3)\n");
+                printf("Put your move (for ex. B3), or press q for quit.\n");
                 fgets(line, LINELEN - 1, stdin);
+                
+                if (((line[0] == 'q') || (line[0] == 'Q')) && (line[1] == '\n')) {
+                        return 1;
+                }
                
                 if (strlen(line) < 2)
                         continue;
@@ -187,6 +201,8 @@ void get_input_con(void) {
         } while (is_input_correct == 0);
         
         get_input(&pisk, (x - 'A'), y - 1);
+        
+        return 0;
 }
 
 void print_grid(void) {

@@ -69,8 +69,18 @@ typedef struct {
 } PISKWORKS_T;
 
 extern void p_create_new_game(PISKWORKS_T *p);
+
 extern int get_input(PISKWORKS_T *p, int x, int y);
+
+/* 
+* Check situation at board and computer will put his move if play == 1
+* Returns:
+* 0: game continue
+* 1: computer is winner
+* 2: human is winner
+*/
 extern int check_and_play(PISKWORKS_T *p, int play);
+
 extern STONE get_stone(PISKWORKS_T *p, int x, int y);
 
 #endif
