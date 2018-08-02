@@ -68,8 +68,19 @@ typedef struct {
         int eagerness;               
 } PISKWORKS_T;
 
+
+/*
+* Create new game
+* Returns PISKWORKS_T initialized
+*/
 extern void p_create_new_game(PISKWORKS_T *p);
 
+/*
+* Get input from human
+* Returns:
+* 0: input was received successfully
+* 1: input failed
+*/
 extern int get_input(PISKWORKS_T *p, int x, int y);
 
 /* 
@@ -81,6 +92,22 @@ extern int get_input(PISKWORKS_T *p, int x, int y);
 */
 extern int check_and_play(PISKWORKS_T *p, int play);
 
+/*
+* Get stone
+* Returns stone at given position
+*/
 extern STONE get_stone(PISKWORKS_T *p, int x, int y);
+
+#ifdef _LOAD_SAVE_
+
+/*
+* Save game
+* Returns:
+* 0: saved successfully
+* 1: save failed
+*/
+extern int save_game(PISKWORKS_T *p, char *filename);
+
+#endif
 
 #endif

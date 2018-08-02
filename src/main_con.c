@@ -172,13 +172,39 @@ int get_input_con(void) {
         STONE s;
 
         do {
-                is_input_correct = 0;                
-                printf("Put your move (for ex. B3), or press q for quit.\n");
+                is_input_correct = 0;
+                                
+                printf("Put your move (for ex. B3) or (q)uit");
+                #ifdef _LOAD_SAVE_
+                printf(", (s)ave");
+                #endif
+                printf("\n");
+                
                 fgets(line, LINELEN - 1, stdin);
                 
                 if (((line[0] == 'q') || (line[0] == 'Q')) && (line[1] == '\n')) {
                         return 1;
                 }
+                
+                #ifdef _LOAD_SAVE_
+                if (((line[0] == 's') || (line[0] == 'S')) && (line[1] == '\n')) {
+                        int ret;
+                        
+                        printf("Type filename:\n");
+                        fgets(line, LINELEN - 1, stdin);
+                        if (line[strlen(line) - 2] == '\n')
+                                line[strlen(line) - 2] = '\0';
+                        if (line[strlen(line) - 1] == '\n')
+                                line[strlen(line) - 1] = '\0';
+                        ret = save_game(&pisk, line);
+                        if (ret == 0) {
+                                printf("Saved\n");
+                        } else {
+                                printf("Save failed\n");
+                        }
+                        continue;
+                }
+                #endif
                
                 if (strlen(line) < 2)
                         continue;

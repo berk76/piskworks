@@ -12,7 +12,7 @@
 
 
 CC = cc
-CFLAGS = -O2 -Wall -c -o $@ -D _EINSTEIN_
+CFLAGS = -O2 -Wall -c -o $@ -D _EINSTEIN_ -D _LOAD_SAVE_
 
 
 all: pisk_w32 pisk_con

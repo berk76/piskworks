@@ -443,3 +443,50 @@ void clear_grid(PISKWORKS_T *p) {
         p->gs.miny = -GRID_OFFSET;
         p->gs.maxy = GRID_OFFSET; 
 }
+
+#ifdef _LOAD_SAVE_
+
+int save_game(PISKWORKS_T *p, char *filename) {
+        FILE *f;
+        int x, y;
+        
+        if (filename == NULL)
+                return 1;
+                
+        f = fopen(filename, "w");
+        if (f == NULL)
+                return 1;
+                
+        fprintf(f, "gs.minx:\t%d\n", p->gs.minx);
+        fprintf(f, "gs.miny:\t%d\n", p->gs.miny);
+        fprintf(f, "gs.maxx:\t%d\n", p->gs.maxx);
+        fprintf(f, "gs.maxy:\t%d\n", p->gs.maxy);
+        
+        fprintf(f, "move_cnt:\t%d\n", p->move_cnt);
+        fprintf(f, "last_move_x:\t%d\n", p->last_move_x);
+        fprintf(f, "last_move_y:\t%d\n", p->last_move_y);
+        fprintf(f, "computer_starts_game:\t%d\n", p->computer_starts_game);
+        fprintf(f, "score_computer:\t%d\n", p->score_computer);
+        fprintf(f, "score_player:\t%d\n", p->score_player);
+        fprintf(f, "difficulty:\t%d\n", p->difficulty);
+        fprintf(f, "eagerness:\t%d\n", p->eagerness);
+
+        for (y = 0; y < grid_size_y; y ++) {
+                for (x = 0; x < grid_size_x; x ++) {
+                        switch (p->grid[y * grid_size_y + x]) {
+                                case CROSS:     fprintf(f, "x");
+                                                break;
+                                case CIRCLE:    fprintf(f, "o");
+                                                break;
+                                default:        fprintf(f, ".");
+                        }
+                }
+                fprintf(f, "\n");
+        }
+
+        fclose(f);
+        
+        return 0;
+}
+
+#endif
