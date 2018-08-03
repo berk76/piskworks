@@ -444,7 +444,7 @@ void clear_grid(PISKWORKS_T *p) {
         p->gs.maxy = GRID_OFFSET; 
 }
 
-#ifdef _LOAD_SAVE_
+#ifdef _SAVE_GAME_
 
 int save_game(PISKWORKS_T *p, char *filename) {
         FILE *f;

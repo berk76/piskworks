@@ -98,7 +98,7 @@ extern int check_and_play(PISKWORKS_T *p, int play);
 */
 extern STONE get_stone(PISKWORKS_T *p, int x, int y);
 
-#ifdef _LOAD_SAVE_
+#ifdef _SAVE_GAME_
 
 /*
 * Save game

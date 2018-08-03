@@ -175,7 +175,7 @@ int get_input_con(void) {
                 is_input_correct = 0;
                                 
                 printf("Put your move (for ex. B3) or (q)uit");
-                #ifdef _LOAD_SAVE_
+                #ifdef _SAVE_GAME_
                 printf(", (s)ave");
                 #endif
                 printf("\n");
@@ -186,22 +186,28 @@ int get_input_con(void) {
                         return 1;
                 }
                 
-                #ifdef _LOAD_SAVE_
+                #ifdef _SAVE_GAME_
                 if (((line[0] == 's') || (line[0] == 'S')) && (line[1] == '\n')) {
                         int ret;
+                        #define FILELEN 100
+                        char filename[FILELEN];
                         
                         printf("Type filename:\n");
-                        fgets(line, LINELEN - 1, stdin);
-                        if (line[strlen(line) - 2] == '\n')
-                                line[strlen(line) - 2] = '\0';
-                        if (line[strlen(line) - 1] == '\n')
-                                line[strlen(line) - 1] = '\0';
-                        ret = save_game(&pisk, line);
+                        fgets(filename, FILELEN - 1, stdin);
+                        
+                        if (filename[strlen(filename) - 2] == '\n')
+                                filename[strlen(filename) - 2] = '\0';
+                        if (filename[strlen(filename) - 1] == '\n')
+                                filename[strlen(filename) - 1] = '\0';
+                        
+                        ret = save_game(&pisk, filename);
                         if (ret == 0) {
                                 printf("Saved\n");
                         } else {
                                 printf("Save failed\n");
                         }
+                        
+                        print_grid();        
                         continue;
                 }
                 #endif
