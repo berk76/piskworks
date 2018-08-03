@@ -24,6 +24,7 @@
 #include "res_con.h"
 #endif
 
+#define FILELEN 100
 
 static PISKWORKS_T pisk;
 static char cross_char = 'x';
@@ -61,10 +62,8 @@ int main(void) {
                 pisk.difficulty = 3;
                 pisk.computer_starts_game = 1;
                 setup_preferences();
-                p_create_new_game(&pisk);
 
                 print_grid();
-                result = 0;
                 
                 do {             
                         result = get_input_con();
@@ -119,38 +118,71 @@ void print_char(char c, int n) {
 
 void setup_preferences(void) {
         int c;
+        #ifdef _SAVE_GAME_
+        int ret;
+        char filename[FILELEN];
+        #endif
                 
-        printf("Preferences:\n\n");
-        printf("* your stones ... %c\n", toupper(cross_char));
-        printf("* difficulty  ... %d\n", pisk.difficulty);
-        printf("* %s will put first move\n", (pisk.computer_starts_game) ? "computer" : "you");
-        
-        c = get_option("\n(C)hange preferences,(S)tart", "CcSs");
-        
-        if (tolower(c) == 'c') {
+        while (1) {
+                printf("Preferences:\n\n");
+                printf("* your stones ... %c\n", toupper(cross_char));
+                printf("* difficulty  ... %d\n", pisk.difficulty);
+                printf("* %s will put first move\n", (pisk.computer_starts_game) ? "computer" : "you");
                 
-                c = get_option("Do you want to play with X or O?", "XxOo");
-                if (tolower(c) == 'x') {
-                        cross_char = 'x';
-                        circle_char = 'o';
-                } else {
-                        cross_char = 'o';
-                        circle_char = 'x';
+                #ifdef _SAVE_GAME_
+                c = get_option("\n(C)hange preferences,(S)tart, (L)oad", "CcSsLl");
+                #else
+                c = get_option("\n(C)hange preferences,(S)tart", "CcSs");
+                #endif
+                
+                switch (tolower(c)) {
+                        case 's':
+                                p_create_new_game(&pisk);
+                                return;
+                        case 'c':
+                                c = get_option("Do you want to play with X or O?", "XxOo");
+                                if (tolower(c) == 'x') {
+                                        cross_char = 'x';
+                                        circle_char = 'o';
+                                } else {
+                                        cross_char = 'o';
+                                        circle_char = 'x';
+                                }
+                                
+                                c = get_option("Which difficulty (1,2,3)?", "123");
+                                pisk.difficulty = c - '1' + 1;
+                                
+                                c = get_option("Do you want to put first move (y/n)?", "YyNn");
+                                if (tolower(c) == 'y') {
+                                        pisk.computer_starts_game = 0;
+                                } else {
+                                        pisk.computer_starts_game = 1;
+                                }
+                                break;
+                        #ifdef _SAVE_GAME_
+                        case 'l':
+                                p_create_new_game(&pisk);
+                                printf("Type filename:\n");
+                                fgets(filename, FILELEN - 1, stdin);
+                        
+                                if (filename[strlen(filename) - 2] == '\n')
+                                        filename[strlen(filename) - 2] = '\0';
+                                if (filename[strlen(filename) - 1] == '\n')
+                                        filename[strlen(filename) - 1] = '\0';
+                        
+                                ret = load_game(&pisk, filename);
+                                if (ret == 0) {
+                                        printf("Loaded\n");
+                                        return;
+                                } else {
+                                        printf("Load failed\n");
+                                }
+                                break;
+                        #endif
                 }
-                
-                c = get_option("Which difficulty (1,2,3)?", "123");
-                pisk.difficulty = c - '1' + 1;
-                
-                c = get_option("Do you want to put first move (y/n)?", "YyNn");
-                if (tolower(c) == 'y') {
-                        pisk.computer_starts_game = 0;
-                } else {
-                        pisk.computer_starts_game = 1;
-                }
-                
-                setup_preferences();
-        }
+        }        
 }
+
 
 int get_option(char *message, char *values) {
         int c;
@@ -163,6 +195,7 @@ int get_option(char *message, char *values) {
         
         return c;
 }
+
 
 int get_input_con(void) {
         #define LINELEN 10
@@ -189,7 +222,6 @@ int get_input_con(void) {
                 #ifdef _SAVE_GAME_
                 if (((line[0] == 's') || (line[0] == 'S')) && (line[1] == '\n')) {
                         int ret;
-                        #define FILELEN 100
                         char filename[FILELEN];
                         
                         printf("Type filename:\n");
@@ -236,6 +268,7 @@ int get_input_con(void) {
         
         return 0;
 }
+
 
 void print_grid(void) {
         int x, y;

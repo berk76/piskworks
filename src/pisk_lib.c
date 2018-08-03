@@ -18,6 +18,9 @@
 #ifndef NO_TIME
 #include <time.h>
 #endif
+#ifdef _SAVE_GAME_
+#include <string.h>
+#endif
 #include "pisk_lib.h"
 
 #define get_random_priority() (rand() % 10)
@@ -30,6 +33,9 @@ static void move_empty(NEXT_MOVE *m);
 static void add_free_double(PISKWORKS_T *p, int x, int y, STONE stone, NEXT_MOVE *nm);
 static void put_stone(PISKWORKS_T *p, int x, int y, STONE s);
 static void clear_grid(PISKWORKS_T *p);
+#ifdef _SAVE_GAME_
+static char *getValueFromSavedFile(FILE *f, char *name, char *buff, int buflen);
+#endif
 
 
 void p_create_new_game(PISKWORKS_T *p) {
@@ -471,6 +477,7 @@ int save_game(PISKWORKS_T *p, char *filename) {
         fprintf(f, "difficulty:\t%d\n", p->difficulty);
         fprintf(f, "eagerness:\t%d\n", p->eagerness);
 
+        fprintf(f, "board:\t\n");
         for (y = 0; y < grid_size_y; y ++) {
                 for (x = 0; x < grid_size_x; x ++) {
                         switch (p->grid[y * grid_size_y + x]) {
@@ -487,6 +494,105 @@ int save_game(PISKWORKS_T *p, char *filename) {
         fclose(f);
         
         return 0;
+}
+
+int load_game(PISKWORKS_T *p, char *filename) {
+        FILE *f;
+        char *v;
+        #define BUFLEN 100
+        char buff[BUFLEN];
+        
+        f = fopen(filename, "r");
+        if (f == NULL)
+                return 1;
+        
+        v = getValueFromSavedFile(f, "gs.minx:\t", buff, BUFLEN);
+        if (v != NULL) p->gs.minx = atoi(v); else goto error;
+        
+        v = getValueFromSavedFile(f, "gs.miny:\t", buff, BUFLEN);
+        if (v != NULL) p->gs.miny = atoi(v); else goto error;
+        
+        v = getValueFromSavedFile(f, "gs.maxx:\t", buff, BUFLEN);
+        if (v != NULL) p->gs.maxx = atoi(v); else goto error;
+        
+        v = getValueFromSavedFile(f, "gs.maxy:\t", buff, BUFLEN);
+        if (v != NULL) p->gs.maxy = atoi(v); else goto error;
+        
+        v = getValueFromSavedFile(f, "move_cnt:\t", buff, BUFLEN);
+        if (v != NULL) p->move_cnt = atoi(v); else goto error;
+        
+        v = getValueFromSavedFile(f, "last_move_x:\t", buff, BUFLEN);
+        if (v != NULL) p->last_move_x = atoi(v); else goto error;
+        
+        v = getValueFromSavedFile(f, "last_move_y:\t", buff, BUFLEN);
+        if (v != NULL) p->last_move_y = atoi(v); else goto error;
+        
+        v = getValueFromSavedFile(f, "computer_starts_game:\t", buff, BUFLEN);
+        if (v != NULL) p->computer_starts_game = atoi(v); else goto error;
+        
+        v = getValueFromSavedFile(f, "score_computer:\t", buff, BUFLEN);
+        if (v != NULL) p->score_computer = atoi(v); else goto error;
+        
+        v = getValueFromSavedFile(f, "score_player:\t", buff, BUFLEN);
+        if (v != NULL) p->score_player = atoi(v); else goto error;
+        
+        v = getValueFromSavedFile(f, "difficulty:\t", buff, BUFLEN);
+        if (v != NULL) p->difficulty = atoi(v); else goto error;
+        
+        v = getValueFromSavedFile(f, "eagerness:\t", buff, BUFLEN);
+        if (v != NULL) p->eagerness = atoi(v); else goto error;
+        
+        v = getValueFromSavedFile(f, "board:", buff, BUFLEN);
+        if (v != NULL) {
+                int i;
+                int c;
+
+                for (i = 0; i < grid_size_y * grid_size_x; i++) {
+                        c = fgetc(f);
+                        
+                        if (strchr(".xo",c) == NULL) {
+                                i--;
+                                continue;
+                        }
+                        
+                        switch (c) {
+                                case '.': p->grid[i] = EMPTY;
+                                          break;
+                                case 'x': p->grid[i] = CROSS;
+                                          break;
+                                case 'o': p->grid[i] = CIRCLE;
+                                          break;
+                        }
+                }
+        }  else {
+                goto error;
+        }
+        
+        fclose(f);
+        return 0;        
+error:
+        fclose(f);
+        return 1;
+}
+
+
+char *getValueFromSavedFile(FILE *f, char *name, char *buff, int buflen) {
+        char *ret;
+        
+        if ((f == NULL) || (name == NULL))
+                return NULL;
+                
+        fseek(f, 0, SEEK_SET);
+        
+        while (fgets(buff, buflen, f) != NULL) {
+                ret = strstr(buff, name);
+                if (ret != NULL) {
+                        ret += strlen(name);
+                        return ret;
+                }
+        }
+        
+        return NULL;
 }
 
 #endif

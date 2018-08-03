@@ -108,6 +108,14 @@ extern STONE get_stone(PISKWORKS_T *p, int x, int y);
 */
 extern int save_game(PISKWORKS_T *p, char *filename);
 
+/*
+* Load game
+* Returns:
+* 0: loaded successfully
+* 1: load failed
+*/
+extern int load_game(PISKWORKS_T *p, char *filename);
+
 #endif
 
 #endif
