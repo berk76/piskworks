@@ -207,7 +207,7 @@ int get_input_con(void) {
         do {
                 is_input_correct = 0;
                                 
-                printf("Put your move (for ex. B3) or (q)uit");
+                printf("Your move (for ex. B3) or (q)uit");
                 #ifdef _SAVE_GAME_
                 printf(", (s)ave");
                 #endif
