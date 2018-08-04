@@ -130,9 +130,9 @@ void setup_preferences(void) {
                 printf("* %s will put first move\n", (pisk.computer_starts_game) ? "computer" : "you");
                 
                 #ifdef _SAVE_GAME_
-                c = get_option("\n(C)hange preferences,(S)tart, (L)oad", "CcSsLl");
+                c = get_option("\n(C)hange preferences, (S)tart, (L)oad", "CcSsLl");
                 #else
-                c = get_option("\n(C)hange preferences,(S)tart", "CcSs");
+                c = get_option("\n(C)hange preferences, (S)tart", "CcSs");
                 #endif
                 
                 switch (tolower(c)) {
@@ -207,9 +207,9 @@ int get_input_con(void) {
         do {
                 is_input_correct = 0;
                                 
-                printf("Your move (for ex. B3) or (q)uit");
+                printf("Your move (for ex. B3) or (Q)uit");
                 #ifdef _SAVE_GAME_
-                printf(", (s)ave");
+                printf(", (S)ave");
                 #endif
                 printf("\n");
                 
