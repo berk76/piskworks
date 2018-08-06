@@ -52,6 +52,8 @@ static void draw_mesh(HDC hdc, PISKWORKS_T *game);
 static void draw_stone(HDC hdc, int x, int y, STONE stone, int last);
 static void update_statusbar();
 static void new_game(int reset_counter);
+static void load_game_w32();
+static void save_game_w32();
 
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nShow) {
@@ -160,6 +162,12 @@ LRESULT CALLBACK WindowProcMain(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
                         switch (LOWORD(wParam)) {
                                 case ID_G_NEW:
                                         new_game(1);
+                                        break;
+                                case ID_G_LOAD:
+                                        load_game_w32();
+                                        break;
+                                case ID_G_SAVE:
+                                        save_game_w32();
                                         break;
                                 case ID_G_SETTINGS:
                                         if (DialogBox(g_hInstance, TEXT("SETTINGBOX"), hwnd, SettingsDlgProc))
@@ -430,4 +438,67 @@ void new_game(int reset_counter) {
         }
         update_statusbar();
         InvalidateRect(g_hwndMain, NULL, TRUE);
+}
+
+void load_game_w32() {
+        OPENFILENAME ofn;       // common dialog box structure
+        char szFile[TEXT_BUFF]; // buffer for file name
+        
+        // Initialize OPENFILENAME
+        ZeroMemory(&ofn, sizeof(ofn));
+        ofn.lStructSize = sizeof(ofn);
+        ofn.hwndOwner = g_hwndMain;
+        ofn.lpstrFile = szFile;
+        // Set lpstrFile[0] to '\0' so that GetOpenFileName does not 
+        // use the contents of szFile to initialize itself.
+        ofn.lpstrFile[0] = '\0';
+        ofn.nMaxFile = sizeof(szFile);
+        ofn.lpstrFilter = "Piskworks\0*.SAV\0";
+        ofn.nFilterIndex = 0;
+        ofn.lpstrFileTitle = NULL;
+        ofn.nMaxFileTitle = 0;
+        ofn.lpstrInitialDir = NULL;
+        ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+        
+        if (GetOpenFileName(&ofn) == TRUE) {
+                if (load_game(&pisk, ofn.lpstrFile)) {
+                        MessageBox(g_hwndMain, "Load failed.",
+                                "Error", MB_ICONERROR);
+                } else {
+                        update_statusbar();
+                        InvalidateRect(g_hwndMain, NULL, TRUE);
+                }
+        }
+}
+
+void save_game_w32() {
+        OPENFILENAME ofn;       // common dialog box structure
+        char szFile[TEXT_BUFF]; // buffer for file name
+        
+        // Initialize OPENFILENAME
+        ZeroMemory(&ofn, sizeof(ofn));
+        ofn.lStructSize = sizeof(ofn);
+        ofn.hwndOwner = g_hwndMain;
+        ofn.lpstrFile = szFile;
+        // Set lpstrFile[0] to '\0' so that GetOpenFileName does not 
+        // use the contents of szFile to initialize itself.
+        ofn.lpstrFile[0] = '\0';
+        ofn.nMaxFile = sizeof(szFile);
+        ofn.lpstrFilter = "Piskworks\0*.SAV\0";
+        ofn.nFilterIndex = 0;
+        ofn.lpstrFileTitle = NULL;
+        ofn.nMaxFileTitle = 0;
+        ofn.lpstrInitialDir = NULL;
+        ofn.Flags = OFN_PATHMUSTEXIST;
+        
+        if (GetSaveFileName(&ofn) == TRUE) {
+                strncat(ofn.lpstrFile, ".sav", TEXT_BUFF - strlen(ofn.lpstrFile) - 1);
+                if (save_game(&pisk, ofn.lpstrFile)) {
+                        MessageBox(g_hwndMain, "Save failed.",
+                                "Error", MB_ICONERROR);
+                } else {
+                        MessageBox(g_hwndMain, "Save completed.",
+                                "Information", MB_ICONINFORMATION);
+                }
+        }
 }

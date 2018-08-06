@@ -17,9 +17,11 @@
 #define IDR_MAINMENU    2101
 
 #define ID_G_NEW        9001
-#define ID_G_SETTINGS   9002
-#define ID_END          9003
-#define ID_ABOUT        9004
+#define ID_G_LOAD       9002
+#define ID_G_SAVE       9003
+#define ID_G_SETTINGS   9004
+#define ID_END          9005
+#define ID_ABOUT        9006
 
 #define IDC_STONE_X     1001
 #define IDC_STONE_O     1002

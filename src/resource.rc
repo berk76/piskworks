@@ -23,6 +23,9 @@ BEGIN
     POPUP "&Game"
     BEGIN
         MENUITEM "&New", ID_G_NEW
+        MENUITEM "&Load...", ID_G_LOAD
+        MENUITEM "&Save...", ID_G_SAVE
+        MENUITEM SEPARATOR
         MENUITEM "Se&ttings...", ID_G_SETTINGS
         MENUITEM SEPARATOR
         MENUITEM "E&xit", ID_END
