@@ -218,8 +218,8 @@ int computer_play(PISKWORKS_T *p, int x, int y, NEXT_MOVE *nm, NEXT_MOVE *tmp_nm
                 }
                 
                 /* add doubles*/
-                if ((p->difficulty > 2) && (tmp_nm->first == EMPTY) && 
-                        (tmp_nm->move_is_first == 1) && (tmp_nm->stone_cnt_together == 2)) {
+                if ((p->difficulty > 2) && (tmp_nm->move_is_first == 1) && 
+                        (((tmp_nm->first == EMPTY) && (tmp_nm->stone_cnt_together == 2)) || (tmp_nm->stone_cnt_together > 2))) {
                         
                         add_free_double(p, tmp_nm->move_x, tmp_nm->move_y, tmp_nm->stone, nm);
                         add_free_double(p, x, y, tmp_nm->stone, nm);
