@@ -24,6 +24,10 @@
 #include "res_con.h"
 #endif
 
+#ifdef _AS400_
+static char alpha[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+#endif
+
 #define FILELEN 100
 
 static PISKWORKS_T pisk;
@@ -264,7 +268,11 @@ int get_input_con(void) {
                 is_input_correct = 1;
         } while (is_input_correct == 0);
         
+        #ifdef _AS400_
+        get_input(&pisk, (strchr(alpha,x) - alpha), y - 1);
+        #else
         get_input(&pisk, (x - 'A'), y - 1);
+        #endif
         
         return 0;
 }
