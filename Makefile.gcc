@@ -33,5 +33,5 @@ src/resource.res: src/resource.rc src/resource.h
 	windres src/resource.rc -O coff -o src/resource.res
 
 clean:
-	rm -f src/*.o *.exe src/*.res pisk_con
+	rm -f src/*.o *.exe src/*.res pisk_con src/*.gom
 

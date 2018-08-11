@@ -38,7 +38,8 @@ static char circle_char = 'o';
 static void print_char(char c, int n);
 static void setup_preferences(void);
 static int get_option(char *message, char *values);
-static int get_input_con(void); /* return value 0 = input done, 1 = quit game */
+/* return value 0 = input done, 1 = quit game */
+static int get_input_con(void);
 static void print_grid(void);
 
 
