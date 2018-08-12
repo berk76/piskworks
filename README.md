@@ -59,9 +59,9 @@ Piskworks is a simple desk game known as gomoku.
 
 ### AS400
   1. download project `git clone https://github.com/berk76/piskworks Piskworks`
-  1. go to src `cd src`
-  1. run `./crtgom.sh` it will produce source file for as400 `qcsrc.gom`
-  1. get into as400 and create your personal library if you dont have one `crtlib mylib`
+  1. go to src directory `cd src`
+  1. run `./crtgom.sh` - it will produce source file for as400 `qcsrc.gom`
+  1. get into as400 and create your personal library if you dont have one yet `crtlib mylib`
   1. setup your private library as default library `chgprf curlib(mylib)`
   1. create new file QCSRC `crtsrcpf mylib/qcsrc`
   1. copy new member GOM (from src/qcsrc.gom) into QCSRC file using FTP client.
