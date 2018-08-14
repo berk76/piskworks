@@ -19,13 +19,19 @@ all: pisk_w32 pisk_con
 
 pisk_w32: src/main_w32.o src/pisk_lib.o src/resource.res 
 	$(CC) -Wall -o $@ src/main_w32.o src/pisk_lib.o src/resource.res -lgdi32 -lcomctl32 -mwindows
-        
+
 pisk_con: src/main_con.o src/pisk_lib.o  
 	$(CC) -Wall -o $@ src/main_con.o src/pisk_lib.o
+
+unittest: src/unittest.o src/pisk_lib.o  
+	$(CC) -Wall -o $@ src/unittest.o src/pisk_lib.o
+	mv unittest* tests
 
 src/main_w32.o: src/main_w32.c src/pisk_lib.h src/resource.h
 
 src/main_con.o: src/main_con.c src/pisk_lib.h src/res_con.h
+
+src/unittest.o: src/unittest.c src/pisk_lib.h
 
 src/pisk_lib.o: src/pisk_lib.c src/pisk_lib.h
 
@@ -33,5 +39,5 @@ src/resource.res: src/resource.rc src/resource.h
 	windres src/resource.rc -O coff -o src/resource.res
 
 clean:
-	rm -f src/*.o *.exe src/*.res pisk_con src/*.gom
+	rm -f src/*.o *.exe src/*.res pisk_con src/*.gom unittest* tests/unittest*
 

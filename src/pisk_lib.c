@@ -23,6 +23,20 @@
 #endif
 #include "pisk_lib.h"
 
+typedef struct {
+        STONE stone;
+        STONE first;
+        STONE last;
+        int priority;
+        int random_priority;
+        int empty_cnt;
+        int stone_cnt;
+        int stone_cnt_together;
+        int move_x;
+        int move_y;
+        int move_is_first;
+} NEXT_MOVE;
+
 #define get_random_priority() (rand() % 10)
 
 static int computer_count(PISKWORKS_T *p, int x, int y, int *num_x, int *num_o);
@@ -459,7 +473,7 @@ int save_game(PISKWORKS_T *p, char *filename) {
         if (filename == NULL)
                 return 1;
                 
-        f = fopen(filename, "w");
+        f = fopen(filename, "wb");
         if (f == NULL)
                 return 1;
                 
@@ -502,7 +516,7 @@ int load_game(PISKWORKS_T *p, char *filename) {
         #define BUFLEN 100
         char buff[BUFLEN];
         
-        f = fopen(filename, "r");
+        f = fopen(filename, "rb");
         if (f == NULL)
                 return 1;
         

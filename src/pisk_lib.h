@@ -33,20 +33,6 @@ typedef struct {
 } GRID_SIZE;
 
 typedef struct {
-        STONE stone;
-        STONE first;
-        STONE last;
-        int priority;
-        int random_priority;
-        int empty_cnt;
-        int stone_cnt;
-        int stone_cnt_together;
-        int move_x;
-        int move_y;
-        int move_is_first;
-} NEXT_MOVE;
-
-typedef struct {
         int x;
         int y;
         int count;
