@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 for var in *.sce
 do

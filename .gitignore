@@ -12,3 +12,4 @@ pisk_zx*
 zcc_opt.def
 qcsrc.gom
 tests/*.result
+tests/unittest
