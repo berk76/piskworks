@@ -1,5 +1,9 @@
 #!/bin/sh
 
-./unittest test1.sce test1.exp
+for var in *.sce
+do
+        ./unittest $var ${var/.sce/.exp}
+done
 
 echo "All tests done!"
+exit 0
