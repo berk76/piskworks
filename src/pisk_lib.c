@@ -310,6 +310,18 @@ int computer_play(PISKWORKS_T *p, int x, int y, NEXT_MOVE *nm, NEXT_MOVE *tmp_nm
                                 tmp_nm->stone_cnt_together = 1;
                         }
                         tmp_nm->last = CIRCLE;
+                        
+                        /* handle urgent situation */
+                        if (p->difficulty > 1) {
+                                if ((tmp_nm->stone_cnt_together == 2) && (tmp_nm->stone_cnt >= 3) && (tmp_nm->empty_cnt >= 3))
+                                        tmp_nm->priority += 92;
+                                        
+                                if ((tmp_nm->stone_cnt_together == 3) && (tmp_nm->empty_cnt >= 2))
+                                        tmp_nm->priority += 94;
+                                        
+                                if ((tmp_nm->stone_cnt_together == 4) && (tmp_nm->empty_cnt >= 1))
+                                        tmp_nm->priority += 96;
+                        }
                         break;
                 
                 /*
@@ -343,6 +355,18 @@ int computer_play(PISKWORKS_T *p, int x, int y, NEXT_MOVE *nm, NEXT_MOVE *tmp_nm
                                 tmp_nm->stone_cnt_together = 1;
                         }
                         tmp_nm->last = CROSS;
+                        
+                        /* handle urgent situation */
+                        if (p->difficulty > 1) {
+                                if ((tmp_nm->stone_cnt_together == 2) && (tmp_nm->stone_cnt >= 3) && (tmp_nm->empty_cnt >= 3))
+                                        tmp_nm->priority += 91;
+                                        
+                                if ((tmp_nm->stone_cnt_together == 3) && (tmp_nm->empty_cnt >= 2))
+                                        tmp_nm->priority += 93;
+                                        
+                                if ((tmp_nm->stone_cnt_together == 4) && (tmp_nm->empty_cnt >= 1))
+                                        tmp_nm->priority += 95;
+                        }
                         break;
                 /* 
                  *  Will never happen because 
@@ -351,35 +375,15 @@ int computer_play(PISKWORKS_T *p, int x, int y, NEXT_MOVE *nm, NEXT_MOVE *tmp_nm
                 case UNKNOWN:
                         break;
         }
-        
-        /* handle urgent situation */
-        if (p->difficulty > 1) {
-                
-                if ((tmp_nm->stone == CROSS) && (tmp_nm->stone_cnt_together >= 2) && (tmp_nm->stone_cnt >= 3) && (tmp_nm->empty_cnt >= 3))
-                                tmp_nm->priority = 100;
-                if ((tmp_nm->stone == CIRCLE) && (tmp_nm->stone_cnt_together >= 2) && (tmp_nm->stone_cnt >= 3) && (tmp_nm->empty_cnt >= 3))
-                                tmp_nm->priority = 101;
-                                
-                if ((tmp_nm->stone == CROSS) && (tmp_nm->stone_cnt_together == 3) && (tmp_nm->empty_cnt >= 2))
-                                tmp_nm->priority = 102;
-                if ((tmp_nm->stone == CIRCLE) && (tmp_nm->stone_cnt_together == 3) && (tmp_nm->empty_cnt >= 2))
-                                tmp_nm->priority = 103;
-                
-                if ((tmp_nm->stone == CROSS) && (tmp_nm->stone_cnt_together == 4) && (tmp_nm->empty_cnt >= 1))
-                                tmp_nm->priority = 104;
-                if ((tmp_nm->stone == CIRCLE) && (tmp_nm->stone_cnt_together == 4) && (tmp_nm->empty_cnt >= 1))
-                                tmp_nm->priority = 105;
-                                
-                if (tmp_nm->priority > 99)
-                        move_copy_higher_priority(p, nm, tmp_nm);
-        }
 
         return 0;
 }
 
 void move_copy_higher_priority(PISKWORKS_T *p, NEXT_MOVE *dest, NEXT_MOVE *src) {
+        /*
         if ((src->stone == CIRCLE) && (src->priority < 99))
                 src->priority += p->eagerness;
+        */
                 
         src->random_priority = get_random_priority();
                                         
@@ -426,16 +430,16 @@ void add_free_double(PISKWORKS_T *p, int x, int y, STONE stone, NEXT_MOVE *nm) {
         for(i = 0; i <= p->free_double_last_used; i++) {
                 if ((pt[i].x == x) && (pt[i].y == y) && (pt[i].stone == stone)) {
                         pt[i].count += 1;
-                        if ((pt[i].stone == CIRCLE) && (nm->priority < 50)) {
+                        if ((pt[i].stone == CIRCLE) && (nm->priority < 7)) {
                                 move_empty(nm);
                                 nm->move_x = pt[i].x;
                                 nm->move_y = pt[i].y;
-                                nm->priority = 50;
-                        } else if ((pt[i].stone == CROSS) && (nm->priority < 49)) {
+                                nm->priority = 7;
+                        } else if ((pt[i].stone == CROSS) && (nm->priority < 5)) {
                                 move_empty(nm);
                                 nm->move_x = pt[i].x;
                                 nm->move_y = pt[i].y;
-                                nm->priority = 49;
+                                nm->priority = 5;
                         }
                         return;
                 }
