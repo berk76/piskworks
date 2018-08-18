@@ -220,97 +220,136 @@ int computer_count(PISKWORKS_T *p, int x, int y, int *num_x, int *num_o) {
 
 int computer_play(PISKWORKS_T *p, int x, int y, NEXT_MOVE *nm, NEXT_MOVE *tmp_nm) {
         STONE stone;
-        NEXT_MOVE tmp;
+        NEXT_MOVE tmp_local;
         
         stone = get_stone(p, x, y);
-        if (stone == NA) {
-                move_copy_higher_priority(p, nm, tmp_nm);
-        } else
-        if (stone == EMPTY) {                             
-                if (tmp_nm->last == EMPTY) {
+        
+        switch (stone) {
+                /* 
+                 *  You got out of board. 
+                 */
+                case NA:
                         move_copy_higher_priority(p, nm, tmp_nm);
-                }
-                
-                /* add doubles*/
-                if ((p->difficulty > 2) && (tmp_nm->move_is_first == 1) && 
-                        (((tmp_nm->first == EMPTY) && (tmp_nm->stone_cnt_together == 2)) || (tmp_nm->stone_cnt_together > 2))) {
+                        break;
                         
-                        add_free_double(p, tmp_nm->move_x, tmp_nm->move_y, tmp_nm->stone, nm);
-                        add_free_double(p, x, y, tmp_nm->stone, nm);
-                }
-                
-                if (tmp_nm->first == UNKNOWN) 
-                        tmp_nm->first = EMPTY;
-                
-                tmp_nm->priority++;
-                tmp_nm->empty_cnt++;                 
-                
-                if ((tmp_nm->stone == UNKNOWN) || 
-                        ((tmp_nm->stone != UNKNOWN) && (tmp_nm->move_x == 0) && (tmp_nm->move_y == 0)) ||
-                        ((tmp_nm->stone != UNKNOWN) && (tmp_nm->move_is_first == 1))
-                        ) {
-                                tmp_nm->move_x = x;
-                                tmp_nm->move_y = y;
-                                tmp_nm->move_is_first = (tmp_nm->stone == UNKNOWN);
-                }
-                
-                tmp_nm->last = EMPTY;
-        } else
-        if (stone == CIRCLE) {                                                
-                if (tmp_nm->stone == CROSS) {
-                        tmp.last = tmp_nm->last;
-                        tmp.move_x = tmp_nm->move_x;
-                        tmp.move_y = tmp_nm->move_y; 
-                        move_copy_higher_priority(p, nm, tmp_nm);
-                        if (tmp.last == EMPTY) {
-                                tmp_nm->first = EMPTY;
-                                tmp_nm->last = EMPTY;
-                                tmp_nm->empty_cnt = 1;
-                                tmp_nm->move_x = tmp.move_x;
-                                tmp_nm->move_y = tmp.move_y;
-                                tmp_nm->move_is_first = 1;
-                                tmp_nm->priority++;        
+                /* 
+                 *  Empty field 
+                 */        
+                case EMPTY:
+                        
+                        /* Check for doubles */
+                        if ((p->difficulty > 2) && (tmp_nm->move_is_first == 1) && 
+                                (((tmp_nm->first == EMPTY) && (tmp_nm->stone_cnt_together == 2)) || (tmp_nm->stone_cnt_together > 2))) {
+                                
+                                add_free_double(p, tmp_nm->move_x, tmp_nm->move_y, tmp_nm->stone, nm);
+                                add_free_double(p, x, y, tmp_nm->stone, nm);
                         }
-                }
-                tmp_nm->stone = CIRCLE;
-                if (tmp_nm->first == UNKNOWN)                        
-                        tmp_nm->first = CIRCLE;
-                tmp_nm->priority += 2;
-                tmp_nm->stone_cnt++;
-                if (tmp_nm->last == CIRCLE) {                        
-                        tmp_nm->stone_cnt_together++;
-                } else {
-                        tmp_nm->stone_cnt_together = 1;
-                }
-                tmp_nm->last = CIRCLE;                
-        } else
-        if (stone == CROSS) {
-                if (tmp_nm->stone == CIRCLE) {
-                        tmp.last = tmp_nm->last;
-                        tmp.move_x = tmp_nm->move_x;
-                        tmp.move_y = tmp_nm->move_y;
-                        move_copy_higher_priority(p, nm, tmp_nm);
-                        if (tmp.last == EMPTY) {
+                        
+                        /* 
+                         *  Finish pattern if previous was also empty
+                         *  and set first as empty                          
+                         */
+                        if (tmp_nm->last == EMPTY) {
+                                move_copy_higher_priority(p, nm, tmp_nm);
                                 tmp_nm->first = EMPTY;
-                                tmp_nm->last = EMPTY;
-                                tmp_nm->empty_cnt = 1;
-                                tmp_nm->move_x = tmp.move_x;
-                                tmp_nm->move_y = tmp.move_y;
-                                tmp_nm->move_is_first = 1;
-                                tmp_nm->priority++;        
                         }
-                }
-                tmp_nm->stone = CROSS;
-                if (tmp_nm->first == UNKNOWN)                        
-                        tmp_nm->first = CROSS;
-                tmp_nm->priority += 2;
-                tmp_nm->stone_cnt++;
-                if (tmp_nm->last == CROSS) {                        
-                        tmp_nm->stone_cnt_together++;
-                } else {
-                        tmp_nm->stone_cnt_together = 1;
-                }
-                tmp_nm->last = CROSS;                                
+                        
+                        /* Increase priority about one in case of empty */
+                        tmp_nm->priority++;
+                        tmp_nm->empty_cnt++;                 
+                        
+                        /* 
+                         *  Set move coorditates in case of:
+                         *  - new pattern (stone == unknown)
+                         *  - coorditates had not been set yet
+                         *  - move is first in pattern
+                         *  (in case of tmp_nm->stone == unknown
+                         *   leave it unknown until you will discover 
+                         *   the first stone in pattern)                                                                                                   
+                         */
+                        if ((tmp_nm->stone == UNKNOWN) || 
+                            ((tmp_nm->stone != UNKNOWN) && (tmp_nm->move_x == 0) && (tmp_nm->move_y == 0)) ||
+                            ((tmp_nm->stone != UNKNOWN) && (tmp_nm->move_is_first == 1))
+                           ) {
+                                        tmp_nm->move_x = x;
+                                        tmp_nm->move_y = y;
+                                        tmp_nm->move_is_first = (tmp_nm->stone == UNKNOWN);
+                        }
+                        
+                        tmp_nm->last = EMPTY;
+                        break;
+                        
+                /*
+                 *  Circle is computer
+                 */                 
+                case CIRCLE:
+                        if (tmp_nm->stone == CROSS) {
+                                tmp_local.last = tmp_nm->last;
+                                tmp_local.move_x = tmp_nm->move_x;
+                                tmp_local.move_y = tmp_nm->move_y; 
+                                move_copy_higher_priority(p, nm, tmp_nm);
+                                if (tmp_local.last == EMPTY) {
+                                        tmp_nm->first = EMPTY;
+                                        tmp_nm->last = EMPTY;
+                                        tmp_nm->empty_cnt = 1;
+                                        tmp_nm->move_x = tmp_local.move_x;
+                                        tmp_nm->move_y = tmp_local.move_y;
+                                        tmp_nm->move_is_first = 1;
+                                        tmp_nm->priority++;        
+                                }
+                        }
+                        tmp_nm->stone = CIRCLE;
+                        if (tmp_nm->first == UNKNOWN)                        
+                                tmp_nm->first = CIRCLE;
+                        /* Increase priority about two in case of stone */
+                        tmp_nm->priority += 2;
+                        tmp_nm->stone_cnt++;
+                        if (tmp_nm->last == CIRCLE) {                        
+                                tmp_nm->stone_cnt_together++;
+                        } else {
+                                tmp_nm->stone_cnt_together = 1;
+                        }
+                        tmp_nm->last = CIRCLE;
+                        break;
+                
+                /*
+                 *  Cross is human
+                 */        
+                case CROSS:
+                        if (tmp_nm->stone == CIRCLE) {
+                                tmp_local.last = tmp_nm->last;
+                                tmp_local.move_x = tmp_nm->move_x;
+                                tmp_local.move_y = tmp_nm->move_y;
+                                move_copy_higher_priority(p, nm, tmp_nm);
+                                if (tmp_local.last == EMPTY) {
+                                        tmp_nm->first = EMPTY;
+                                        tmp_nm->last = EMPTY;
+                                        tmp_nm->empty_cnt = 1;
+                                        tmp_nm->move_x = tmp_local.move_x;
+                                        tmp_nm->move_y = tmp_local.move_y;
+                                        tmp_nm->move_is_first = 1;
+                                        tmp_nm->priority++;        
+                                }
+                        }
+                        tmp_nm->stone = CROSS;
+                        if (tmp_nm->first == UNKNOWN)                        
+                                tmp_nm->first = CROSS;
+                        /* Increase priority about two in case of stone */
+                        tmp_nm->priority += 2;
+                        tmp_nm->stone_cnt++;
+                        if (tmp_nm->last == CROSS) {                        
+                                tmp_nm->stone_cnt_together++;
+                        } else {
+                                tmp_nm->stone_cnt_together = 1;
+                        }
+                        tmp_nm->last = CROSS;
+                        break;
+                /* 
+                 *  Will never happen because 
+                 *  get_stone doesn't return this value. 
+                 */        
+                case UNKNOWN:
+                        break;
         }
         
         /* handle urgent situation */
