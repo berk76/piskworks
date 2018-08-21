@@ -25,6 +25,7 @@
 #define MARGIN 15
 #define GRID_FIELD_SIZE 20
 #define TEXT_BUFF 256
+#define EXTENSION ".sav"
 
 TCHAR _AppName[TEXT_BUFF];
 TCHAR _AboutText[TEXT_BUFF];
@@ -453,7 +454,7 @@ void load_game_w32() {
         // use the contents of szFile to initialize itself.
         ofn.lpstrFile[0] = '\0';
         ofn.nMaxFile = sizeof(szFile);
-        ofn.lpstrFilter = "Piskworks\0*.SAV\0";
+        ofn.lpstrFilter = "Piskworks\0*" EXTENSION "\0";
         ofn.nFilterIndex = 0;
         ofn.lpstrFileTitle = NULL;
         ofn.nMaxFileTitle = 0;
@@ -475,7 +476,6 @@ void save_game_w32() {
         OPENFILENAME ofn;       // common dialog box structure
         char szFile[TEXT_BUFF]; // buffer for file name
         char *p;
-        #define EXTENSION ".sav"
         
         // Initialize OPENFILENAME
         ZeroMemory(&ofn, sizeof(ofn));
@@ -486,7 +486,7 @@ void save_game_w32() {
         // use the contents of szFile to initialize itself.
         ofn.lpstrFile[0] = '\0';
         ofn.nMaxFile = sizeof(szFile);
-        ofn.lpstrFilter = "Piskworks\0*.sav\0";
+        ofn.lpstrFilter = "Piskworks\0*" EXTENSION "\0";
         ofn.nFilterIndex = 0;
         ofn.lpstrFileTitle = NULL;
         ofn.nMaxFileTitle = 0;
