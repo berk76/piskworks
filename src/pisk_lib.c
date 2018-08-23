@@ -310,18 +310,6 @@ int computer_play(PISKWORKS_T *p, int x, int y, NEXT_MOVE *nm, NEXT_MOVE *tmp_nm
                                 tmp_nm->stone_cnt_together = 1;
                         }
                         tmp_nm->last = CIRCLE;
-                        
-                        /* handle urgent situation */
-                        if (p->difficulty > 1) {
-                                if ((tmp_nm->stone_cnt_together == 2) && (tmp_nm->stone_cnt >= 3) && (tmp_nm->empty_cnt >= 3))
-                                        tmp_nm->priority += 92;
-                                        
-                                if ((tmp_nm->stone_cnt_together == 3) && (tmp_nm->empty_cnt >= 2))
-                                        tmp_nm->priority += 94;
-                                        
-                                if ((tmp_nm->stone_cnt_together == 4) && (tmp_nm->empty_cnt >= 1))
-                                        tmp_nm->priority += 96;
-                        }
                         break;
                 
                 /*
@@ -355,18 +343,6 @@ int computer_play(PISKWORKS_T *p, int x, int y, NEXT_MOVE *nm, NEXT_MOVE *tmp_nm
                                 tmp_nm->stone_cnt_together = 1;
                         }
                         tmp_nm->last = CROSS;
-                        
-                        /* handle urgent situation */
-                        if (p->difficulty > 1) {
-                                if ((tmp_nm->stone_cnt_together == 2) && (tmp_nm->stone_cnt >= 3) && (tmp_nm->empty_cnt >= 3))
-                                        tmp_nm->priority += 91;
-                                        
-                                if ((tmp_nm->stone_cnt_together == 3) && (tmp_nm->empty_cnt >= 2))
-                                        tmp_nm->priority += 93;
-                                        
-                                if ((tmp_nm->stone_cnt_together == 4) && (tmp_nm->empty_cnt >= 1))
-                                        tmp_nm->priority += 95;
-                        }
                         break;
                 /* 
                  *  Will never happen because 
@@ -374,6 +350,33 @@ int computer_play(PISKWORKS_T *p, int x, int y, NEXT_MOVE *nm, NEXT_MOVE *tmp_nm
                  */        
                 case UNKNOWN:
                         break;
+        }
+        
+        /* handle urgent situation */
+        if (p->difficulty > 1) {
+                /* pattern: .oo.o. */
+                if ((tmp_nm->stone_cnt_together == 2) && (tmp_nm->stone_cnt >= 3) && (tmp_nm->empty_cnt >= 3)) {
+                        tmp_nm->priority = 91;
+                        if (tmp_nm->stone == CIRCLE)
+                                tmp_nm->priority += 1;
+                        move_copy_higher_priority(p, nm, tmp_nm);
+                } else
+                        
+                /* pattern: .ooo. */
+                if ((tmp_nm->stone_cnt_together == 3) && (tmp_nm->empty_cnt >= 2)) {
+                        tmp_nm->priority = 92;
+                        if (tmp_nm->stone == CIRCLE)
+                                tmp_nm->priority += 1;
+                        move_copy_higher_priority(p, nm, tmp_nm);
+                } else
+                        
+                /* pattern: .oooo */
+                if ((tmp_nm->stone_cnt_together == 4) && (tmp_nm->empty_cnt >= 1)) {
+                        tmp_nm->priority = 94;
+                        if (tmp_nm->stone == CIRCLE)
+                                tmp_nm->priority += 1;
+                        move_copy_higher_priority(p, nm, tmp_nm);
+                }
         }
 
         return 0;
@@ -430,16 +433,16 @@ void add_free_double(PISKWORKS_T *p, int x, int y, STONE stone, NEXT_MOVE *nm) {
         for(i = 0; i <= p->free_double_last_used; i++) {
                 if ((pt[i].x == x) && (pt[i].y == y) && (pt[i].stone == stone)) {
                         pt[i].count += 1;
-                        if ((pt[i].stone == CIRCLE) && (nm->priority < 7)) {
+                        if ((pt[i].stone == CIRCLE) && (nm->priority < 51)) {
                                 move_empty(nm);
                                 nm->move_x = pt[i].x;
                                 nm->move_y = pt[i].y;
-                                nm->priority = 7;
-                        } else if ((pt[i].stone == CROSS) && (nm->priority < 5)) {
+                                nm->priority = 51;
+                        } else if ((pt[i].stone == CROSS) && (nm->priority < 50)) {
                                 move_empty(nm);
                                 nm->move_x = pt[i].x;
                                 nm->move_y = pt[i].y;
-                                nm->priority = 5;
+                                nm->priority = 50;
                         }
                         return;
                 }
