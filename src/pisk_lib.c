@@ -241,7 +241,8 @@ int computer_play(PISKWORKS_T *p, int x, int y, NEXT_MOVE *nm, NEXT_MOVE *tmp_nm
                         if ((p->difficulty > 2) && (tmp_nm->move_is_first == 1) && 
                                 (((tmp_nm->first == EMPTY) && (tmp_nm->stone_cnt_together == 2)) || (tmp_nm->stone_cnt_together > 2))) {
                                 
-                                add_free_double(p, tmp_nm->move_x, tmp_nm->move_y, tmp_nm->stone, nm);
+                                if (get_stone(p, tmp_nm->move_x, tmp_nm->move_y) == EMPTY)
+                                        add_free_double(p, tmp_nm->move_x, tmp_nm->move_y, tmp_nm->stone, nm);
                                 add_free_double(p, x, y, tmp_nm->stone, nm);
                         }
                         
@@ -267,7 +268,7 @@ int computer_play(PISKWORKS_T *p, int x, int y, NEXT_MOVE *nm, NEXT_MOVE *tmp_nm
                          *   leave it unknown until you will discover 
                          *   the first stone in pattern)                                                                                                   
                          */
-                        if ((tmp_nm->stone == UNKNOWN) || 
+                        if ((tmp_nm->stone == UNKNOWN) ||
                             ((tmp_nm->stone != UNKNOWN) && (tmp_nm->move_x == 0) && (tmp_nm->move_y == 0)) ||
                             ((tmp_nm->stone != UNKNOWN) && (tmp_nm->move_is_first == 1))
                            ) {
