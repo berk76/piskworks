@@ -96,12 +96,10 @@ int main(void) {
                         case 1: printf("GAME OVER!\n");
                                 pisk.score_computer++;
                                 printf("Computer is winner\n");
-                                printf("(d=%d, e=%d, %s started)\n", pisk.difficulty, pisk.eagerness, (pisk.computer_starts_game) ? "computer" : "you");
                                 break;
                         case 2: printf("GAME OVER!\n");
                                 pisk.score_player++;
                                 printf("You are winner\n");
-                                printf("(d=%d, e=%d, %s started)\n", pisk.difficulty, pisk.eagerness, (pisk.computer_starts_game) ? "computer" : "you");
                                 break;
                         case 3: printf("GAME ABORTED!\n");
                 }

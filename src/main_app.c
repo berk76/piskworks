@@ -76,7 +76,6 @@ int main(void) {
                         pisk.score_player++;
                         printf("YOU ARE WINNER\n");
                 }
-                printf("(D=%d, E=%d, %s STARTED)\n", pisk.difficulty, pisk.eagerness, (pisk.computer_starts_game) ? "COMPUTER" : "YOU");        
                 
                 printf("COMPUTER:YOU  %d:%d\n", pisk.score_computer, pisk.score_player);
                 c = get_option("\nANOTHER GAME? (Y/N)", "YyNn");        

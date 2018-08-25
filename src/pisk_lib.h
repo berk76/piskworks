@@ -51,7 +51,6 @@ typedef struct {
         int score_computer;
         int score_player;
         int difficulty;
-        int eagerness;               
 } PISKWORKS_T;
 
 

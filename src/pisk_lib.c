@@ -60,7 +60,6 @@ void p_create_new_game(PISKWORKS_T *p) {
 	#else
 	srand(1000);
 	#endif
-        p->eagerness = ((rand() % 3) - 1) * 2;
         clear_grid(p);
         if (p->computer_starts_game) {
                 put_stone(p, 0, 0, CIRCLE);
@@ -384,11 +383,7 @@ int computer_play(PISKWORKS_T *p, int x, int y, NEXT_MOVE *nm, NEXT_MOVE *tmp_nm
 }
 
 void move_copy_higher_priority(PISKWORKS_T *p, NEXT_MOVE *dest, NEXT_MOVE *src) {
-        /*
-        if ((src->stone == CIRCLE) && (src->priority < 99))
-                src->priority += p->eagerness;
-        */
-                
+
         src->random_priority = get_random_priority();
                                         
         if ((src->stone != UNKNOWN) &&
@@ -536,7 +531,6 @@ int save_game(PISKWORKS_T *p, char *filename) {
         fprintf(f, "score_computer:\t%d\n", p->score_computer);
         fprintf(f, "score_player:\t%d\n", p->score_player);
         fprintf(f, "difficulty:\t%d\n", p->difficulty);
-        fprintf(f, "eagerness:\t%d\n", p->eagerness);
 
         fprintf(f, "board:\t\n");
         for (y = 0; y < grid_size_y; y ++) {
@@ -599,9 +593,6 @@ int load_game(PISKWORKS_T *p, char *filename) {
         
         v = getValueFromSavedFile(f, "difficulty:\t", buff, BUFLEN);
         if (v != NULL) p->difficulty = atoi(v); else goto error;
-        
-        v = getValueFromSavedFile(f, "eagerness:\t", buff, BUFLEN);
-        if (v != NULL) p->eagerness = atoi(v); else goto error;
         
         v = getValueFromSavedFile(f, "board:", buff, BUFLEN);
         if (v != NULL) {
