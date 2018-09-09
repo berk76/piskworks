@@ -22,7 +22,9 @@
 #include "resource.h"
 
 #define _MainClassName TEXT("WinAPIMainClass")
-#define MARGIN 15
+#define TOOLBAR_HEIGHT 30
+#define MARGIN_X 15
+#define MARGIN_Y (15 + TOOLBAR_HEIGHT) 
 #define GRID_FIELD_SIZE 20
 #define TEXT_BUFF 256
 #define EXTENSION ".sav"
@@ -33,6 +35,7 @@ TCHAR _StatusText[TEXT_BUFF];
 HINSTANCE g_hInstance;
 HWND g_hwndMain;
 HWND g_hwndStatusBar;
+HWND g_hwndToolBar;
 MSG msg;
 PISKWORKS_T pisk;
 HPEN hPen;
@@ -123,23 +126,64 @@ BOOL InitApp() {
         if (g_hwndStatusBar == NULL)
                 return FALSE;
 
-        
+        HFONT hFont = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
+        SendMessage(g_hwndStatusBar, WM_SETFONT, (WPARAM)hFont, (LPARAM)TRUE);
+
+        g_hwndToolBar = CreateWindowEx(0,
+                TOOLBARCLASSNAME,
+                NULL, 
+                WS_CHILD | WS_VISIBLE,
+                0, 0, 0, 0,
+                g_hwndMain,
+                (HMENU)NULL, 
+                GetModuleHandle(NULL), 
+                NULL);
+        if (g_hwndToolBar == NULL)
+                return FALSE;
+
+        // Send the TB_BUTTONSTRUCTSIZE message, which is required for
+        // backward compatibility.
+        SendMessage(g_hwndToolBar, TB_BUTTONSTRUCTSIZE, (WPARAM)sizeof(TBBUTTON), 0);
+
+        TBBUTTON tbb[3];
+        TBADDBITMAP tbab;
+
+        tbab.hInst = HINST_COMMCTRL;
+        tbab.nID = IDB_STD_SMALL_COLOR;
+        SendMessage(g_hwndToolBar, TB_ADDBITMAP, 0, (LPARAM)&tbab);
+
+        ZeroMemory(tbb, sizeof(tbb));
+
+        tbb[0].iBitmap = STD_FILENEW;
+        tbb[0].fsState = TBSTATE_ENABLED;
+        tbb[0].fsStyle = TBSTYLE_BUTTON;
+        tbb[0].idCommand = ID_G_NEW;
+
+        tbb[1].iBitmap = STD_FILEOPEN;
+        tbb[1].fsState = TBSTATE_ENABLED;
+        tbb[1].fsStyle = TBSTYLE_BUTTON;
+        tbb[1].idCommand = ID_G_LOAD;
+
+        tbb[2].iBitmap = STD_FILESAVE;
+        tbb[2].fsState = TBSTATE_ENABLED;
+        tbb[2].fsStyle = TBSTYLE_BUTTON;
+        tbb[2].idCommand = ID_G_SAVE;
+
+        SendMessage(g_hwndToolBar, TB_ADDBUTTONS, sizeof(tbb)/sizeof(TBBUTTON), (LPARAM)&tbb);
+
         hPen = CreatePen(PS_SOLID | PS_INSIDEFRAME, 2, 0x000000);
         hPenGrid = CreatePen(PS_SOLID | PS_INSIDEFRAME, 2, 0xEEEEAF); 
         hBrush = CreateSolidBrush(0xFFFFFF);
         hBrushHighlited = CreateSolidBrush(0x00FFFF);
         hBrushDisabled = CreateSolidBrush(0x808080);
-        
-        HFONT hFont = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
-        SendMessage(g_hwndStatusBar, WM_SETFONT, (WPARAM)hFont, (LPARAM)TRUE);
-        
-        pisk.difficulty = 3;        
+
+        pisk.difficulty = 3;
         pisk.computer_starts_game = 1;
         new_game(1);
-                        
+
         ShowWindow(g_hwndMain, SW_SHOWNORMAL);
         UpdateWindow(g_hwndMain);
-                                  
+
         return TRUE;
 }
 
@@ -188,6 +232,7 @@ LRESULT CALLBACK WindowProcMain(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
                         break;
                 case WM_SIZE:
                         SendMessage(g_hwndStatusBar, WM_SIZE, wParam, lParam);
+                        SendMessage(g_hwndToolBar, WM_SIZE, wParam, lParam);
                         break;
                 case WM_DESTROY:
                         PostQuitMessage(0);
@@ -283,12 +328,12 @@ void OnWM_MOUSEDOWN(WPARAM wParam, LPARAM lParam) {
         HDC hdc;
         int result;
         
-        if ((GET_X_LPARAM(lParam) < MARGIN) || (GET_Y_LPARAM(lParam) < MARGIN)) {
+        if ((GET_X_LPARAM(lParam) < MARGIN_X) || (GET_Y_LPARAM(lParam) < MARGIN_Y)) {
                 return;
         } 
         
-        x = (GET_X_LPARAM(lParam) -  MARGIN) / GRID_FIELD_SIZE;
-        y = (GET_Y_LPARAM(lParam) -  MARGIN) / GRID_FIELD_SIZE;
+        x = (GET_X_LPARAM(lParam) -  MARGIN_X) / GRID_FIELD_SIZE;
+        y = (GET_Y_LPARAM(lParam) -  MARGIN_Y) / GRID_FIELD_SIZE;
         
         if ((x > (pisk.gs.maxx - pisk.gs.minx)) || 
             (y > (pisk.gs.maxy - pisk.gs.miny))) {
@@ -354,19 +399,19 @@ void draw_mesh(HDC hdc, PISKWORKS_T *game) {
         
         /* Cls */
         Rectangle(hdc, 
-                MARGIN, 
-                MARGIN, 
-                MARGIN + GRID_FIELD_SIZE * fields_x, 
-                MARGIN + GRID_FIELD_SIZE * fields_y);
+                MARGIN_X, 
+                MARGIN_Y, 
+                MARGIN_X + GRID_FIELD_SIZE * fields_x, 
+                MARGIN_Y + GRID_FIELD_SIZE * fields_y);
         
         /* Draw grid */
         for (i = 0; i <= fields_x; i++) {
-                MoveToEx(hdc, MARGIN + i * GRID_FIELD_SIZE, MARGIN, NULL);
-                LineTo(hdc, MARGIN + i * GRID_FIELD_SIZE, MARGIN + fields_y * GRID_FIELD_SIZE);
+                MoveToEx(hdc, MARGIN_X + i * GRID_FIELD_SIZE, MARGIN_Y, NULL);
+                LineTo(hdc, MARGIN_X + i * GRID_FIELD_SIZE, MARGIN_Y + fields_y * GRID_FIELD_SIZE);
         }
         for (i = 0; i <= fields_y; i++) {
-                MoveToEx(hdc, MARGIN, MARGIN + i * GRID_FIELD_SIZE, NULL);
-                LineTo(hdc, MARGIN + fields_x * GRID_FIELD_SIZE, MARGIN + i * GRID_FIELD_SIZE);
+                MoveToEx(hdc, MARGIN_X, MARGIN_Y + i * GRID_FIELD_SIZE, NULL);
+                LineTo(hdc, MARGIN_X + fields_x * GRID_FIELD_SIZE, MARGIN_Y + i * GRID_FIELD_SIZE);
         }
 
         /* Draw stones */
@@ -383,8 +428,8 @@ void draw_mesh(HDC hdc, PISKWORKS_T *game) {
 void draw_stone(HDC hdc, int x, int y, STONE stone, int last) {
         int x_pos, y_pos;
         
-        x_pos = MARGIN + x * GRID_FIELD_SIZE + GRID_FIELD_SIZE / 2; 
-        y_pos = MARGIN + y * GRID_FIELD_SIZE + GRID_FIELD_SIZE / 2;
+        x_pos = MARGIN_X + x * GRID_FIELD_SIZE + GRID_FIELD_SIZE / 2; 
+        y_pos = MARGIN_Y + y * GRID_FIELD_SIZE + GRID_FIELD_SIZE / 2;
         SelectObject(hdc, hPen);
         SelectObject(hdc, hBrush);
         
@@ -392,10 +437,10 @@ void draw_stone(HDC hdc, int x, int y, STONE stone, int last) {
                 SelectObject(hdc, hPenGrid);
                 SelectObject(hdc, hBrushHighlited);
                 Rectangle(hdc, 
-                        MARGIN + x * GRID_FIELD_SIZE, 
-                        MARGIN + y * GRID_FIELD_SIZE, 
-                        MARGIN + x * GRID_FIELD_SIZE + GRID_FIELD_SIZE, 
-                        MARGIN + y * GRID_FIELD_SIZE + GRID_FIELD_SIZE);
+                        MARGIN_X + x * GRID_FIELD_SIZE, 
+                        MARGIN_Y + y * GRID_FIELD_SIZE, 
+                        MARGIN_X + x * GRID_FIELD_SIZE + GRID_FIELD_SIZE, 
+                        MARGIN_Y + y * GRID_FIELD_SIZE + GRID_FIELD_SIZE);
                 SelectObject(hdc, hPen);
         }
         
@@ -417,10 +462,10 @@ void draw_stone(HDC hdc, int x, int y, STONE stone, int last) {
                 SelectObject(hdc, hPenGrid);
                 SelectObject(hdc, hBrushDisabled);
                 Rectangle(hdc, 
-                        MARGIN + x * GRID_FIELD_SIZE, 
-                        MARGIN + y * GRID_FIELD_SIZE, 
-                        MARGIN + x * GRID_FIELD_SIZE + GRID_FIELD_SIZE, 
-                        MARGIN + y * GRID_FIELD_SIZE + GRID_FIELD_SIZE);
+                        MARGIN_X + x * GRID_FIELD_SIZE, 
+                        MARGIN_Y + y * GRID_FIELD_SIZE, 
+                        MARGIN_X + x * GRID_FIELD_SIZE + GRID_FIELD_SIZE, 
+                        MARGIN_Y + y * GRID_FIELD_SIZE + GRID_FIELD_SIZE);
                 SelectObject(hdc, hBrush);
                 SelectObject(hdc, hPen);
         }
