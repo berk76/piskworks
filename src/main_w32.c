@@ -548,8 +548,7 @@ void save_game_w32() {
                         MessageBox(g_hwndMain, "Save failed.",
                                 "Error", MB_ICONERROR);
                 } else {
-                        MessageBox(g_hwndMain, "Save completed.",
-                                "Information", MB_ICONINFORMATION);
+                        SetWindowText(g_hwndStatusBar, "Saved...");
                 }
         }
 }
