@@ -145,7 +145,8 @@ BOOL InitApp() {
         // backward compatibility.
         SendMessage(g_hwndToolBar, TB_BUTTONSTRUCTSIZE, (WPARAM)sizeof(TBBUTTON), 0);
 
-        TBBUTTON tbb[3];
+        // Four buttons on toolbar
+        TBBUTTON tbb[4];
         TBADDBITMAP tbab;
 
         tbab.hInst = HINST_COMMCTRL;
@@ -168,6 +169,11 @@ BOOL InitApp() {
         tbb[2].fsState = TBSTATE_ENABLED;
         tbb[2].fsStyle = TBSTYLE_BUTTON;
         tbb[2].idCommand = ID_G_SAVE;
+        
+        tbb[3].iBitmap = STD_PROPERTIES;
+        tbb[3].fsState = TBSTATE_ENABLED;
+        tbb[3].fsStyle = TBSTYLE_BUTTON;
+        tbb[3].idCommand = ID_G_SETTINGS;
 
         SendMessage(g_hwndToolBar, TB_ADDBUTTONS, sizeof(tbb)/sizeof(TBBUTTON), (LPARAM)&tbb);
 
@@ -238,10 +244,6 @@ LRESULT CALLBACK WindowProcMain(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
                         PostQuitMessage(0);
                         break;
                 case WM_CLOSE:
-                        if (MessageBox(hwnd, "Do you want quit?", _AppName,
-                                MB_YESNO | MB_ICONQUESTION) != IDYES) {
-                                        return 0;
-                                }
                         DestroyWindow(hwnd);
                         break;        
                 default:
