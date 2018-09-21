@@ -22,11 +22,11 @@ IDR_MAINMENU MENU
 BEGIN
     POPUP "&Game"
     BEGIN
-        MENUITEM "&New", ID_G_NEW
-        MENUITEM "&Load...", ID_G_LOAD
-        MENUITEM "&Save...", ID_G_SAVE
+        MENUITEM "&New\tCtrl+N", ID_G_NEW
+        MENUITEM "&Load...\tCtrl+L", ID_G_LOAD
+        MENUITEM "&Save...\tCtrl+S", ID_G_SAVE
         MENUITEM SEPARATOR
-        MENUITEM "Se&ttings...", ID_G_SETTINGS
+        MENUITEM "Se&ttings...\tCtrl+P", ID_G_SETTINGS
         MENUITEM SEPARATOR
         MENUITEM "E&xit", ID_END
     END
@@ -52,3 +52,11 @@ BEGIN
         DEFPUSHBUTTON "OK",IDC_OK,35,77,50,14,WS_GROUP
         PUSHBUTTON "Cancel",IDC_CANCEL,113,77,50,14,WS_GROUP
 END
+
+IDR_MAINACCEL ACCELERATORS 
+BEGIN
+    "N", ID_G_NEW,      CONTROL, VIRTKEY
+    "L", ID_G_LOAD,     CONTROL, VIRTKEY
+    "S", ID_G_SAVE,     CONTROL, VIRTKEY
+    "P", ID_G_SETTINGS, CONTROL, VIRTKEY 
+END 

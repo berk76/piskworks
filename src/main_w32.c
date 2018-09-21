@@ -36,6 +36,7 @@ HINSTANCE g_hInstance;
 HWND g_hwndMain;
 HWND g_hwndStatusBar;
 HWND g_hwndToolBar;
+HACCEL g_haccel;
 MSG msg;
 PISKWORKS_T pisk;
 HPEN hPen;
@@ -68,8 +69,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, in
                 return FALSE;
                 
         while (GetMessage(&msg, NULL, 0, 0)) {
-                TranslateMessage(&msg);
-                DispatchMessage(&msg);
+                if (!TranslateAccelerator(msg.hwnd, g_haccel, &msg)) {
+                        TranslateMessage(&msg);
+                        DispatchMessage(&msg);
+                }
         }
         
         DeleteApp();
@@ -182,6 +185,11 @@ BOOL InitApp() {
         hBrush = CreateSolidBrush(0xFFFFFF);
         hBrushHighlited = CreateSolidBrush(0x00FFFF);
         hBrushDisabled = CreateSolidBrush(0x808080);
+
+        // https://docs.microsoft.com/en-us/windows/desktop/menurc/using-keyboard-accelerators        
+        g_haccel = LoadAccelerators(g_hInstance, MAKEINTRESOURCE(IDR_MAINACCEL));
+        if (g_haccel == NULL)
+                return FALSE; 
 
         pisk.difficulty = 3;
         pisk.computer_starts_game = 1;

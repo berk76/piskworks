@@ -15,6 +15,7 @@
 
 #define IDR_MAIN        2000
 #define IDR_MAINMENU    2101
+#define IDR_MAINACCEL   2102
 
 #define ID_G_NEW        9001
 #define ID_G_LOAD       9002
