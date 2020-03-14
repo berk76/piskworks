@@ -1,4 +1,7 @@
 # Piskworks
+
+![build](https://github.com/berk76/piskworks/workflows/build/badge.svg)
+
 Piskworks is a simple desk game known as gomoku.
 
 ## Supported platforms
